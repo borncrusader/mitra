@@ -1,4 +1,4 @@
-.PHONY: build run-server clean dev test help
+.PHONY: build run-server clean dev test protogen help
 
 BINARY_NAME=mitra
 BUILD_DIR=bin
@@ -9,6 +9,7 @@ help:
 	@echo "  run-server - Build and run the server"
 	@echo "  dev        - Run server in development mode"
 	@echo "  test       - Run tests"
+	@echo "  protogen   - Generate Go code from proto files"
 	@echo "  clean      - Remove build artifacts"
 
 build:
@@ -23,6 +24,9 @@ dev:
 
 test:
 	@go test ./...
+
+protogen:
+	@protoc --go_out=. --go_opt=paths=source_relative internal/proto/*.proto
 
 clean:
 	@rm -rf $(BUILD_DIR)

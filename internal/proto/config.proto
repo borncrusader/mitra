@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "mitra/internal/proto";
+
+message Config {
+  ServerConfig server = 1;
+}
+
+message ServerConfig {
+  string port = 1;
+}

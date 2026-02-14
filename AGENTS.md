@@ -7,9 +7,14 @@ Repos, Worktrees, Branches and Agents
 
 # Project Structure
 - `cmd/mitra/` - Main application entry point
-- `internal/config/` - Configuration management
+- `internal/config/` - Configuration management and loading
+- `internal/proto/` - Protobuf definitions for config and data structures
 - `internal/server/` - HTTP server implementation
 - `internal/util/` - Utility functions (random name generation, etc.)
+
+# Notes
+- Config is defined in protobuf (`internal/proto/config.proto`) and can be marshaled to TOML
+- To regenerate proto: `protoc --go_out=. --go_opt=paths=source_relative internal/proto/*.proto`
 
 # Make Targets
 - `make build` - Build the binary to `bin/mitra`
