@@ -1,10 +1,15 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
@@ -23,8 +28,13 @@ func Start(cfg *config.Config) error {
 		Timestamp().
 		Logger()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var wg sync.WaitGroup
+
 	grpcServer := grpc.NewServer()
-	repoService := NewRepoServiceServer(logger, cfg)
+	repoService := NewRepoServiceServer(logger, cfg, ctx, &wg)
 	proto.RegisterRepoServiceServer(grpcServer, repoService)
 	reflection.Register(grpcServer)
 
@@ -44,10 +54,52 @@ func Start(cfg *config.Config) error {
 		}
 	}()
 
+	httpServer := &http.Server{
+		Addr: cfg.Server.Port,
+	}
 	http.HandleFunc("/", helloHandler)
-	logger.Info().
-		Str("port", cfg.Server.Port).
-		Msg("HTTP server starting")
 
-	return http.ListenAndServe(cfg.Server.Port, nil)
+	go func() {
+		logger.Info().
+			Str("port", cfg.Server.Port).
+			Msg("HTTP server starting")
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Fatal().
+				Err(err).
+				Msg("HTTP server error")
+		}
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	<-sigChan
+	logger.Info().Msg("shutdown signal received, initiating graceful shutdown")
+
+	cancel()
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		logger.Error().Err(err).Msg("HTTP server shutdown error")
+	}
+
+	grpcServer.GracefulStop()
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		logger.Info().Msg("all watchers stopped gracefully")
+	case <-shutdownCtx.Done():
+		logger.Warn().Msg("shutdown timeout exceeded, some watchers may not have stopped")
+	}
+
+	logger.Info().Msg("server shutdown complete")
+	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/rs/zerolog"
 	"mitra/internal/config"
@@ -16,16 +17,18 @@ import (
 
 type RepoServiceServer struct {
 	proto.UnimplementedRepoServiceServer
-	logger  zerolog.Logger
-	cfg     *config.Config
-	watcher *RepoWatcher
+	logger zerolog.Logger
+	cfg    *config.Config
+	ctx    context.Context
+	wg     *sync.WaitGroup
 }
 
-func NewRepoServiceServer(logger zerolog.Logger, cfg *config.Config) *RepoServiceServer {
+func NewRepoServiceServer(logger zerolog.Logger, cfg *config.Config, ctx context.Context, wg *sync.WaitGroup) *RepoServiceServer {
 	return &RepoServiceServer{
-		logger:  logger.With().Str("service", "repo").Logger(),
-		cfg:     cfg,
-		watcher: NewRepoWatcher(logger, cfg),
+		logger: logger.With().Str("service", "repo").Logger(),
+		cfg:    cfg,
+		ctx:    ctx,
+		wg:     wg,
 	}
 }
 
@@ -90,7 +93,12 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		return nil, fmt.Errorf("failed to create repo directory: %w", err)
 	}
 
-	go s.watcher.Watch(req.Url, owner, repoName, repoDir)
+	watcher := NewRepoWatcher(s.logger, s.cfg)
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		watcher.Watch(s.ctx, req.Url, owner, repoName, repoDir)
+	}()
 
 	return &proto.AddRepoResponse{
 		Repo: repo,

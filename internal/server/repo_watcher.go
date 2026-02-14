@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"time"
@@ -22,7 +23,7 @@ func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config) *RepoWatcher {
 	}
 }
 
-func (w *RepoWatcher) Watch(repoURL, owner, repoName, repoDir string) {
+func (w *RepoWatcher) Watch(ctx context.Context, repoURL, owner, repoName, repoDir string) {
 	logger := w.logger.With().
 		Str("owner", owner).
 		Str("repo", repoName).
@@ -66,7 +67,7 @@ func (w *RepoWatcher) Watch(repoURL, owner, repoName, repoDir string) {
 			Msg("clone completed successfully")
 	}
 
-	syncInterval := time.Duration(w.cfg.Repo.SyncInterval) * time.Minute
+	syncInterval := time.Duration(w.cfg.Repo.SyncIntervalSecs) * time.Second
 	ticker := time.NewTicker(syncInterval)
 	defer ticker.Stop()
 
@@ -74,32 +75,38 @@ func (w *RepoWatcher) Watch(repoURL, owner, repoName, repoDir string) {
 		Dur("interval", syncInterval).
 		Msg("starting periodic sync")
 
-	for range ticker.C {
-		isClean, err := git.IsClean(cloneDir)
-		if err != nil {
-			logger.Warn().
-				Err(err).
-				Msg("failed to check if worktree is clean")
-			continue
+	for {
+		select {
+		case <-ctx.Done():
+			logger.Info().Msg("stopping watcher due to context cancellation")
+			return
+		case <-ticker.C:
+			isClean, err := git.IsClean(cloneDir)
+			if err != nil {
+				logger.Warn().
+					Err(err).
+					Msg("failed to check if worktree is clean")
+				continue
+			}
+
+			if !isClean {
+				logger.Debug().
+					Msg("worktree is not clean, skipping pull")
+				continue
+			}
+
+			logger.Info().
+				Msg("pulling latest changes")
+
+			if err := git.Pull(cloneDir); err != nil {
+				logger.Warn().
+					Err(err).
+					Msg("failed to pull changes")
+				continue
+			}
+
+			logger.Info().
+				Msg("successfully pulled latest changes")
 		}
-
-		if !isClean {
-			logger.Debug().
-				Msg("worktree is not clean, skipping pull")
-			continue
-		}
-
-		logger.Info().
-			Msg("pulling latest changes")
-
-		if err := git.Pull(cloneDir); err != nil {
-			logger.Warn().
-				Err(err).
-				Msg("failed to pull changes")
-			continue
-		}
-
-		logger.Info().
-			Msg("successfully pulled latest changes")
 	}
 }
