@@ -1,14 +1,14 @@
 .PHONY: build run clean dev
 
-BINARY_NAME=server
+BINARY_NAME=mitra
 BUILD_DIR=bin
 
 build:
 	@mkdir -p $(BUILD_DIR)
-	@go build -o $(BUILD_DIR)/$(BINARY_NAME) main.go
+	@go build -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 run: build
-	@./$(BUILD_DIR)/$(BINARY_NAME)
+	@./$(BUILD_DIR)/$(BINARY_NAME) server
 
 dev:
 	@go run main.go

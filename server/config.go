@@ -15,19 +15,29 @@ type ServerConfig struct {
 	Port string `toml:"port"`
 }
 
-func LoadConfig() (*Config, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-
-	configPath := filepath.Join(homeDir, ".mitra", "config.toml")
-
-	config := &Config{
+func DefaultConfig() *Config {
+	return &Config{
 		Server: ServerConfig{
 			Port: ":9999",
 		},
 	}
+}
+
+func ConfigPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".mitra", "config.toml"), nil
+}
+
+func LoadConfig() (*Config, error) {
+	configPath, err := ConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	config := DefaultConfig()
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		return config, nil
@@ -38,4 +48,26 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return config, nil
+}
+
+func GenerateConfig() error {
+	configPath, err := ConfigPath()
+	if err != nil {
+		return err
+	}
+
+	configDir := filepath.Dir(configPath)
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return err
+	}
+
+	file, err := os.Create(configPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	config := DefaultConfig()
+	encoder := toml.NewEncoder(file)
+	return encoder.Encode(config)
 }
