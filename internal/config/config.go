@@ -12,7 +12,8 @@ func Default() *proto.Config {
 	homeDir, _ := os.UserHomeDir()
 	return &proto.Config{
 		Server: &proto.ServerConfig{
-			Port: ":9999",
+			Port:     ":9999",
+			GrpcPort: ":9998",
 		},
 		Repo: &proto.RepoConfig{
 			Dir: filepath.Join(homeDir, "code", "work"),

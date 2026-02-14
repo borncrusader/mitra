@@ -9,3 +9,13 @@ message Repo {
   string name = 2;
   string path = 3;
 }
+
+service RepoService {
+  rpc ListRepos(ListReposRequest) returns (ListReposResponse);
+}
+
+message ListReposRequest {}
+
+message ListReposResponse {
+  repeated Repo repos = 1;
+}

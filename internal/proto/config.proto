@@ -11,6 +11,7 @@ message Config {
 
 message ServerConfig {
   string port = 1;
+  string grpc_port = 2;
 }
 
 message RepoConfig {

@@ -76,6 +76,7 @@ func (x *Config) GetRepo() *RepoConfig {
 type ServerConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Port          string                 `protobuf:"bytes,1,opt,name=port,proto3" json:"port,omitempty"`
+	GrpcPort      string                 `protobuf:"bytes,2,opt,name=grpc_port,json=grpcPort,proto3" json:"grpc_port,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -113,6 +114,13 @@ func (*ServerConfig) Descriptor() ([]byte, []int) {
 func (x *ServerConfig) GetPort() string {
 	if x != nil {
 		return x.Port
+	}
+	return ""
+}
+
+func (x *ServerConfig) GetGrpcPort() string {
+	if x != nil {
+		return x.GrpcPort
 	}
 	return ""
 }
@@ -168,9 +176,10 @@ const file_internal_proto_config_proto_rawDesc = "" +
 	"\x1binternal/proto/config.proto\x12\x05proto\"\\\n" +
 	"\x06Config\x12+\n" +
 	"\x06server\x18\x01 \x01(\v2\x13.proto.ServerConfigR\x06server\x12%\n" +
-	"\x04repo\x18\x02 \x01(\v2\x11.proto.RepoConfigR\x04repo\"\"\n" +
+	"\x04repo\x18\x02 \x01(\v2\x11.proto.RepoConfigR\x04repo\"?\n" +
 	"\fServerConfig\x12\x12\n" +
-	"\x04port\x18\x01 \x01(\tR\x04port\"\x1e\n" +
+	"\x04port\x18\x01 \x01(\tR\x04port\x12\x1b\n" +
+	"\tgrpc_port\x18\x02 \x01(\tR\bgrpcPort\"\x1e\n" +
 	"\n" +
 	"RepoConfig\x12\x10\n" +
 	"\x03dir\x18\x01 \x01(\tR\x03dirB\x16Z\x14mitra/internal/protob\x06proto3"
