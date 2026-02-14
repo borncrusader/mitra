@@ -38,6 +38,10 @@ func Start(cfg *config.Config) error {
 	proto.RegisterRepoServiceServer(grpcServer, repoService)
 	reflection.Register(grpcServer)
 
+	if err := repoService.StartExistingWatchers(); err != nil {
+		logger.Error().Err(err).Msg("failed to start existing watchers")
+	}
+
 	lis, err := net.Listen("tcp", cfg.Server.GrpcPort)
 	if err != nil {
 		return fmt.Errorf("failed to listen on %s: %w", cfg.Server.GrpcPort, err)

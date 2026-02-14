@@ -32,6 +32,35 @@ func NewRepoServiceServer(logger zerolog.Logger, cfg *config.Config, ctx context
 	}
 }
 
+func (s *RepoServiceServer) StartExistingWatchers() error {
+	repos, err := storage.LoadRepos()
+	if err != nil {
+		return fmt.Errorf("failed to load existing repos: %w", err)
+	}
+
+	s.logger.Info().
+		Int("count", len(repos)).
+		Msg("starting watchers for existing repos")
+
+	for _, repo := range repos {
+		repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
+
+		watcher := NewRepoWatcher(s.logger, s.cfg)
+		s.wg.Add(1)
+		go func(r *proto.Repo, dir string) {
+			defer s.wg.Done()
+			watcher.Watch(s.ctx, r.Url, r.Owner, r.Repo, dir)
+		}(repo, repoDir)
+
+		s.logger.Info().
+			Str("owner", repo.Owner).
+			Str("repo", repo.Repo).
+			Msg("started watcher for existing repo")
+	}
+
+	return nil
+}
+
 func (s *RepoServiceServer) ListRepos(ctx context.Context, req *proto.ListReposRequest) (*proto.ListReposResponse, error) {
 	repos, err := storage.LoadRepos()
 	if err != nil {
