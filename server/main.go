@@ -11,12 +11,16 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	config, err := LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.HandleFunc("/", helloHandler)
 
-	port := ":8080"
-	log.Printf("Server starting on http://localhost%s", port)
+	log.Printf("Server starting on http://localhost%s", config.Server.Port)
 
-	if err := http.ListenAndServe(port, nil); err != nil {
+	if err := http.ListenAndServe(config.Server.Port, nil); err != nil {
 		log.Fatal(err)
 	}
 }
