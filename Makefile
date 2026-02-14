@@ -1,4 +1,4 @@
-.PHONY: build run-server clean dev help
+.PHONY: build run-server clean dev test help
 
 BINARY_NAME=mitra
 BUILD_DIR=bin
@@ -8,6 +8,7 @@ help:
 	@echo "  build      - Build the server binary"
 	@echo "  run-server - Build and run the server"
 	@echo "  dev        - Run server in development mode"
+	@echo "  test       - Run tests"
 	@echo "  clean      - Remove build artifacts"
 
 build:
@@ -19,6 +20,9 @@ run-server: build
 
 dev:
 	@go run ./cmd/mitra
+
+test:
+	@go test ./...
 
 clean:
 	@rm -rf $(BUILD_DIR)
