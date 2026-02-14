@@ -6,8 +6,13 @@ option go_package = "mitra/internal/proto";
 
 message Config {
   ServerConfig server = 1;
+  RepoConfig repo = 2;
 }
 
 message ServerConfig {
   string port = 1;
+}
+
+message RepoConfig {
+  string dir = 1;
 }

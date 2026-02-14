@@ -24,6 +24,7 @@ const (
 type Config struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Server        *ServerConfig          `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
+	Repo          *RepoConfig            `protobuf:"bytes,2,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,6 +62,13 @@ func (*Config) Descriptor() ([]byte, []int) {
 func (x *Config) GetServer() *ServerConfig {
 	if x != nil {
 		return x.Server
+	}
+	return nil
+}
+
+func (x *Config) GetRepo() *RepoConfig {
+	if x != nil {
+		return x.Repo
 	}
 	return nil
 }
@@ -109,15 +117,63 @@ func (x *ServerConfig) GetPort() string {
 	return ""
 }
 
+type RepoConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RepoConfig) Reset() {
+	*x = RepoConfig{}
+	mi := &file_internal_proto_config_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RepoConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RepoConfig) ProtoMessage() {}
+
+func (x *RepoConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_config_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RepoConfig.ProtoReflect.Descriptor instead.
+func (*RepoConfig) Descriptor() ([]byte, []int) {
+	return file_internal_proto_config_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RepoConfig) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
 var File_internal_proto_config_proto protoreflect.FileDescriptor
 
 const file_internal_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"\x1binternal/proto/config.proto\x12\x05proto\"5\n" +
+	"\x1binternal/proto/config.proto\x12\x05proto\"\\\n" +
 	"\x06Config\x12+\n" +
-	"\x06server\x18\x01 \x01(\v2\x13.proto.ServerConfigR\x06server\"\"\n" +
+	"\x06server\x18\x01 \x01(\v2\x13.proto.ServerConfigR\x06server\x12%\n" +
+	"\x04repo\x18\x02 \x01(\v2\x11.proto.RepoConfigR\x04repo\"\"\n" +
 	"\fServerConfig\x12\x12\n" +
-	"\x04port\x18\x01 \x01(\tR\x04portB\x16Z\x14mitra/internal/protob\x06proto3"
+	"\x04port\x18\x01 \x01(\tR\x04port\"\x1e\n" +
+	"\n" +
+	"RepoConfig\x12\x10\n" +
+	"\x03dir\x18\x01 \x01(\tR\x03dirB\x16Z\x14mitra/internal/protob\x06proto3"
 
 var (
 	file_internal_proto_config_proto_rawDescOnce sync.Once
@@ -131,18 +187,20 @@ func file_internal_proto_config_proto_rawDescGZIP() []byte {
 	return file_internal_proto_config_proto_rawDescData
 }
 
-var file_internal_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_internal_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_internal_proto_config_proto_goTypes = []any{
 	(*Config)(nil),       // 0: proto.Config
 	(*ServerConfig)(nil), // 1: proto.ServerConfig
+	(*RepoConfig)(nil),   // 2: proto.RepoConfig
 }
 var file_internal_proto_config_proto_depIdxs = []int32{
 	1, // 0: proto.Config.server:type_name -> proto.ServerConfig
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: proto.Config.repo:type_name -> proto.RepoConfig
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_internal_proto_config_proto_init() }
@@ -156,7 +214,7 @@ func file_internal_proto_config_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_proto_config_proto_rawDesc), len(file_internal_proto_config_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

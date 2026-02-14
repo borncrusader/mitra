@@ -5,20 +5,17 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+	"mitra/internal/proto"
 )
 
-type Config struct {
-	Server ServerConfig `toml:"server"`
-}
-
-type ServerConfig struct {
-	Port string `toml:"port"`
-}
-
-func Default() *Config {
-	return &Config{
-		Server: ServerConfig{
+func Default() *proto.Config {
+	homeDir, _ := os.UserHomeDir()
+	return &proto.Config{
+		Server: &proto.ServerConfig{
 			Port: ":9999",
+		},
+		Repo: &proto.RepoConfig{
+			Dir: filepath.Join(homeDir, "code", "work"),
 		},
 	}
 }
@@ -31,7 +28,7 @@ func Path() (string, error) {
 	return filepath.Join(homeDir, ".mitra", "config.toml"), nil
 }
 
-func Load() (*Config, error) {
+func Load() (*proto.Config, error) {
 	configPath, err := Path()
 	if err != nil {
 		return nil, err
@@ -72,7 +69,7 @@ func Generate() error {
 	return encoder.Encode(cfg)
 }
 
-func Dump(cfg *Config) error {
+func Dump(cfg *proto.Config) error {
 	encoder := toml.NewEncoder(os.Stdout)
 	return encoder.Encode(cfg)
 }
