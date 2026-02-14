@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
+	"github.com/spf13/cobra"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,54 +31,61 @@ func dumpConfig(config *Config) {
 	}
 }
 
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: mitra <command> [subcommand]")
-		fmt.Println("Commands:")
-		fmt.Println("  server         - Start the server")
-		fmt.Println("  config show    - Show current config")
-		fmt.Println("  config generate - Generate default config file")
-		os.Exit(1)
-	}
+var rootCmd = &cobra.Command{
+	Use:   "mitra",
+	Short: "Mitra - Repos, Worktrees, Branches and Agents",
+}
 
-	command := os.Args[1]
-
-	switch command {
-	case "server":
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "Start the server",
+	Run: func(cmd *cobra.Command, args []string) {
 		config, err := LoadConfig()
 		if err != nil {
 			log.Fatal(err)
 		}
 		startServer(config)
-	case "config":
-		if len(os.Args) < 3 {
-			fmt.Println("Usage: mitra config <subcommand>")
-			fmt.Println("Subcommands:")
-			fmt.Println("  show     - Show current config")
-			fmt.Println("  generate - Generate default config file")
-			os.Exit(1)
-		}
+	},
+}
 
-		subcommand := os.Args[2]
-		switch subcommand {
-		case "show":
-			config, err := LoadConfig()
-			if err != nil {
-				log.Fatal(err)
-			}
-			dumpConfig(config)
-		case "generate":
-			if err := GenerateConfig(); err != nil {
-				log.Fatal(err)
-			}
-			configPath, _ := ConfigPath()
-			fmt.Printf("Config generated at %s\n", configPath)
-		default:
-			fmt.Printf("Unknown config subcommand: %s\n", subcommand)
-			os.Exit(1)
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Manage configuration",
+}
+
+var configShowCmd = &cobra.Command{
+	Use:   "show",
+	Short: "Show current config",
+	Run: func(cmd *cobra.Command, args []string) {
+		config, err := LoadConfig()
+		if err != nil {
+			log.Fatal(err)
 		}
-	default:
-		fmt.Printf("Unknown command: %s\n", command)
+		dumpConfig(config)
+	},
+}
+
+var configGenerateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Generate default config file",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := GenerateConfig(); err != nil {
+			log.Fatal(err)
+		}
+		configPath, _ := ConfigPath()
+		fmt.Printf("Config generated at %s\n", configPath)
+	},
+}
+
+func init() {
+	configCmd.AddCommand(configShowCmd)
+	configCmd.AddCommand(configGenerateCmd)
+	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(configCmd)
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
