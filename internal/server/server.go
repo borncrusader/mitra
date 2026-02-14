@@ -34,7 +34,10 @@ func Start(cfg *config.Config) error {
 	var wg sync.WaitGroup
 
 	grpcServer := grpc.NewServer()
-	repoService := NewRepoServiceServer(logger, cfg, ctx, &wg)
+	repoService, err := NewRepoServiceServer(logger, cfg, ctx, &wg)
+	if err != nil {
+		return fmt.Errorf("failed to create repo service: %w", err)
+	}
 	proto.RegisterRepoServiceServer(grpcServer, repoService)
 	reflection.Register(grpcServer)
 

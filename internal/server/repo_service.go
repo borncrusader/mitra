@@ -21,28 +21,34 @@ type RepoServiceServer struct {
 	cfg    *config.Config
 	ctx    context.Context
 	wg     *sync.WaitGroup
+	repos  []*proto.Repo
+	mu     sync.RWMutex
 }
 
-func NewRepoServiceServer(logger zerolog.Logger, cfg *config.Config, ctx context.Context, wg *sync.WaitGroup) *RepoServiceServer {
+func NewRepoServiceServer(logger zerolog.Logger, cfg *config.Config, ctx context.Context, wg *sync.WaitGroup) (*RepoServiceServer, error) {
+	repos, err := storage.LoadRepos()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load repos: %w", err)
+	}
+
 	return &RepoServiceServer{
 		logger: logger.With().Str("service", "repo").Logger(),
 		cfg:    cfg,
 		ctx:    ctx,
 		wg:     wg,
-	}
+		repos:  repos,
+	}, nil
 }
 
 func (s *RepoServiceServer) StartExistingWatchers() error {
-	repos, err := storage.LoadRepos()
-	if err != nil {
-		return fmt.Errorf("failed to load existing repos: %w", err)
-	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	s.logger.Info().
-		Int("count", len(repos)).
+		Int("count", len(s.repos)).
 		Msg("starting watchers for existing repos")
 
-	for _, repo := range repos {
+	for _, repo := range s.repos {
 		repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
 
 		watcher := NewRepoWatcher(s.logger, s.cfg)
@@ -62,13 +68,11 @@ func (s *RepoServiceServer) StartExistingWatchers() error {
 }
 
 func (s *RepoServiceServer) ListRepos(ctx context.Context, req *proto.ListReposRequest) (*proto.ListReposResponse, error) {
-	repos, err := storage.LoadRepos()
-	if err != nil {
-		return nil, err
-	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	return &proto.ListReposResponse{
-		Repos: repos,
+		Repos: s.repos,
 	}, nil
 }
 
@@ -78,20 +82,10 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		return nil, err
 	}
 
-	repo := &proto.Repo{
-		Id:    util.RandomName(),
-		Url:   req.Url,
-		Host:  host,
-		Owner: owner,
-		Repo:  repoName,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	repos, err := storage.LoadRepos()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, existingRepo := range repos {
+	for _, existingRepo := range s.repos {
 		if existingRepo.Host == host && existingRepo.Owner == owner && existingRepo.Repo == repoName {
 			s.logger.Info().
 				Str("host", host).
@@ -104,6 +98,14 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		}
 	}
 
+	repo := &proto.Repo{
+		Id:    util.RandomName(),
+		Url:   req.Url,
+		Host:  host,
+		Owner: owner,
+		Repo:  repoName,
+	}
+
 	s.logger.Info().
 		Str("host", host).
 		Str("owner", owner).
@@ -111,9 +113,10 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		Str("url", req.Url).
 		Msg("adding repository")
 
-	repos = append(repos, repo)
+	s.repos = append(s.repos, repo)
 
-	if err := storage.SaveRepos(repos); err != nil {
+	if err := storage.SaveRepos(s.repos); err != nil {
+		s.repos = s.repos[:len(s.repos)-1]
 		return nil, err
 	}
 
