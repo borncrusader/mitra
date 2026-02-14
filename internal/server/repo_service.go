@@ -9,7 +9,6 @@ import (
 
 	"github.com/rs/zerolog"
 	"mitra/internal/config"
-	"mitra/internal/git"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
 	"mitra/internal/util"
@@ -17,12 +16,16 @@ import (
 
 type RepoServiceServer struct {
 	proto.UnimplementedRepoServiceServer
-	logger zerolog.Logger
+	logger  zerolog.Logger
+	cfg     *config.Config
+	watcher *RepoWatcher
 }
 
-func NewRepoServiceServer(logger zerolog.Logger) *RepoServiceServer {
+func NewRepoServiceServer(logger zerolog.Logger, cfg *config.Config) *RepoServiceServer {
 	return &RepoServiceServer{
-		logger: logger.With().Str("service", "repo").Logger(),
+		logger:  logger.With().Str("service", "repo").Logger(),
+		cfg:     cfg,
+		watcher: NewRepoWatcher(logger, cfg),
 	}
 }
 
@@ -82,57 +85,12 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		return nil, err
 	}
 
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
-	repoDir := filepath.Join(cfg.Repo.Dir, owner, repoName)
+	repoDir := filepath.Join(s.cfg.Repo.Dir, owner, repoName)
 	if err := os.MkdirAll(repoDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create repo directory: %w", err)
 	}
 
-	defaultBranch, err := git.GetDefaultBranch(req.Url)
-	if err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("url", req.Url).
-			Msg("failed to detect default branch, using 'main'")
-		defaultBranch = "main"
-	}
-
-	s.logger.Info().
-		Str("branch", defaultBranch).
-		Str("owner", owner).
-		Str("repo", repoName).
-		Msg("default branch detected")
-
-	cloneDir := filepath.Join(repoDir, defaultBranch)
-
-	if _, err := os.Stat(cloneDir); !os.IsNotExist(err) {
-		s.logger.Info().
-			Str("path", cloneDir).
-			Msg("clone directory already exists, skipping clone")
-		return &proto.AddRepoResponse{
-			Repo: repo,
-		}, nil
-	}
-
-	s.logger.Info().
-		Str("url", req.Url).
-		Str("path", cloneDir).
-		Str("branch", defaultBranch).
-		Msg("starting clone")
-
-	if err := git.Clone(req.Url, cloneDir, defaultBranch); err != nil {
-		return nil, fmt.Errorf("failed to clone repository: %w", err)
-	}
-
-	s.logger.Info().
-		Str("path", cloneDir).
-		Str("owner", owner).
-		Str("repo", repoName).
-		Msg("clone completed successfully")
+	go s.watcher.Watch(req.Url, owner, repoName, repoDir)
 
 	return &proto.AddRepoResponse{
 		Repo: repo,

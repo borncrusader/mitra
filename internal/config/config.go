@@ -18,7 +18,8 @@ type ServerConfig struct {
 }
 
 type RepoConfig struct {
-	Dir string `toml:"dir"`
+	Dir          string `toml:"dir"`
+	SyncInterval int    `toml:"sync_interval"` // in minutes
 }
 
 func Default() *Config {
@@ -29,7 +30,8 @@ func Default() *Config {
 			GrpcPort: ":9998",
 		},
 		Repo: RepoConfig{
-			Dir: filepath.Join(homeDir, "code", "work"),
+			Dir:          filepath.Join(homeDir, "code", "work"),
+			SyncInterval: 10,
 		},
 	}
 }

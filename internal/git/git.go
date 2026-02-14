@@ -57,3 +57,23 @@ func Clone(repoURL, targetDir, branch string) error {
 
 	return cmd.Run()
 }
+
+func IsClean(repoPath string) (bool, error) {
+	cmd := exec.Command("git", "-C", repoPath, "status", "--porcelain")
+	output, err := cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("failed to check git status: %w", err)
+	}
+
+	return len(strings.TrimSpace(string(output))) == 0, nil
+}
+
+func Pull(repoPath string) error {
+	cmd := exec.Command("git", "-C", repoPath, "pull")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to pull: %w, output: %s", err, string(output))
+	}
+
+	return nil
+}

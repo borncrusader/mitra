@@ -24,7 +24,7 @@ func Start(cfg *config.Config) error {
 		Logger()
 
 	grpcServer := grpc.NewServer()
-	repoService := NewRepoServiceServer(logger)
+	repoService := NewRepoServiceServer(logger, cfg)
 	proto.RegisterRepoServiceServer(grpcServer, repoService)
 	reflection.Register(grpcServer)
 
@@ -47,7 +47,7 @@ func Start(cfg *config.Config) error {
 	http.HandleFunc("/", helloHandler)
 	logger.Info().
 		Str("port", cfg.Server.Port).
-		Msgf("HTTP server starting")
+		Msg("HTTP server starting")
 
 	return http.ListenAndServe(cfg.Server.Port, nil)
 }
