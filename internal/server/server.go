@@ -2,10 +2,11 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
+	"os"
 
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"mitra/internal/config"
@@ -17,8 +18,13 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Start(cfg *config.Config) error {
+	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).
+		With().
+		Timestamp().
+		Logger()
+
 	grpcServer := grpc.NewServer()
-	repoService := NewRepoServiceServer()
+	repoService := NewRepoServiceServer(logger)
 	proto.RegisterRepoServiceServer(grpcServer, repoService)
 	reflection.Register(grpcServer)
 
@@ -28,14 +34,20 @@ func Start(cfg *config.Config) error {
 	}
 
 	go func() {
-		log.Printf("gRPC server starting on %s", cfg.Server.GrpcPort)
+		logger.Info().
+			Str("port", cfg.Server.GrpcPort).
+			Msg("gRPC server starting")
 		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("failed to serve gRPC: %v", err)
+			logger.Fatal().
+				Err(err).
+				Msg("failed to serve gRPC")
 		}
 	}()
 
 	http.HandleFunc("/", helloHandler)
-	log.Printf("HTTP server starting on http://localhost%s", cfg.Server.Port)
+	logger.Info().
+		Str("port", cfg.Server.Port).
+		Msgf("HTTP server starting")
 
 	return http.ListenAndServe(cfg.Server.Port, nil)
 }

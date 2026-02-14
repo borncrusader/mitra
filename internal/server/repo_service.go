@@ -3,11 +3,11 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/rs/zerolog"
 	"mitra/internal/config"
 	"mitra/internal/git"
 	"mitra/internal/proto"
@@ -17,10 +17,13 @@ import (
 
 type RepoServiceServer struct {
 	proto.UnimplementedRepoServiceServer
+	logger zerolog.Logger
 }
 
-func NewRepoServiceServer() *RepoServiceServer {
-	return &RepoServiceServer{}
+func NewRepoServiceServer(logger zerolog.Logger) *RepoServiceServer {
+	return &RepoServiceServer{
+		logger: logger.With().Str("service", "repo").Logger(),
+	}
 }
 
 func (s *RepoServiceServer) ListRepos(ctx context.Context, req *proto.ListReposRequest) (*proto.ListReposResponse, error) {
@@ -48,7 +51,12 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		Repo:  repoName,
 	}
 
-	log.Printf("Adding repository: %s/%s/%s", host, owner, repoName)
+	s.logger.Info().
+		Str("host", host).
+		Str("owner", owner).
+		Str("repo", repoName).
+		Str("url", req.Url).
+		Msg("adding repository")
 
 	repos, err := storage.LoadRepos()
 	if err != nil {
@@ -73,28 +81,45 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 
 	defaultBranch, err := git.GetDefaultBranch(req.Url)
 	if err != nil {
-		log.Printf("Failed to detect default branch, using 'main': %v", err)
+		s.logger.Warn().
+			Err(err).
+			Str("url", req.Url).
+			Msg("failed to detect default branch, using 'main'")
 		defaultBranch = "main"
 	}
 
-	log.Printf("Default branch detected: %s", defaultBranch)
+	s.logger.Info().
+		Str("branch", defaultBranch).
+		Str("owner", owner).
+		Str("repo", repoName).
+		Msg("default branch detected")
 
 	cloneDir := filepath.Join(repoDir, defaultBranch)
 
 	if _, err := os.Stat(cloneDir); !os.IsNotExist(err) {
-		log.Printf("Clone directory already exists: %s, skipping clone", cloneDir)
+		s.logger.Info().
+			Str("path", cloneDir).
+			Msg("clone directory already exists, skipping clone")
 		return &proto.AddRepoResponse{
 			Repo: repo,
 		}, nil
 	}
 
-	log.Printf("Starting clone of %s into %s", req.Url, cloneDir)
+	s.logger.Info().
+		Str("url", req.Url).
+		Str("path", cloneDir).
+		Str("branch", defaultBranch).
+		Msg("starting clone")
 
 	if err := git.Clone(req.Url, cloneDir, defaultBranch); err != nil {
 		return nil, fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	log.Printf("Successfully cloned repository to %s", cloneDir)
+	s.logger.Info().
+		Str("path", cloneDir).
+		Str("owner", owner).
+		Str("repo", repoName).
+		Msg("clone completed successfully")
 
 	return &proto.AddRepoResponse{
 		Repo: repo,
