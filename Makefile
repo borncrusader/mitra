@@ -1,5 +1,8 @@
 .PHONY: build run-server clean dev help
 
+BINARY_NAME=mitra
+BUILD_DIR=bin
+
 help:
 	@echo "Available targets:"
 	@echo "  build      - Build the server binary"
@@ -8,13 +11,14 @@ help:
 	@echo "  clean      - Remove build artifacts"
 
 build:
-	@cd server && $(MAKE) build
+	@mkdir -p $(BUILD_DIR)
+	@go build -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/mitra
 
-run-server:
-	@cd server && $(MAKE) run-server
+run-server: build
+	@./$(BUILD_DIR)/$(BINARY_NAME) server
 
 dev:
-	@cd server && $(MAKE) dev
+	@go run ./cmd/mitra
 
 clean:
-	@cd server && $(MAKE) clean
+	@rm -rf $(BUILD_DIR)
