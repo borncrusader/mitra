@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	RepoService_ListRepos_FullMethodName = "/proto.RepoService/ListRepos"
+	RepoService_AddRepo_FullMethodName   = "/proto.RepoService/AddRepo"
 )
 
 // RepoServiceClient is the client API for RepoService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RepoServiceClient interface {
 	ListRepos(ctx context.Context, in *ListReposRequest, opts ...grpc.CallOption) (*ListReposResponse, error)
+	AddRepo(ctx context.Context, in *AddRepoRequest, opts ...grpc.CallOption) (*AddRepoResponse, error)
 }
 
 type repoServiceClient struct {
@@ -47,11 +49,22 @@ func (c *repoServiceClient) ListRepos(ctx context.Context, in *ListReposRequest,
 	return out, nil
 }
 
+func (c *repoServiceClient) AddRepo(ctx context.Context, in *AddRepoRequest, opts ...grpc.CallOption) (*AddRepoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddRepoResponse)
+	err := c.cc.Invoke(ctx, RepoService_AddRepo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RepoServiceServer is the server API for RepoService service.
 // All implementations must embed UnimplementedRepoServiceServer
 // for forward compatibility.
 type RepoServiceServer interface {
 	ListRepos(context.Context, *ListReposRequest) (*ListReposResponse, error)
+	AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error)
 	mustEmbedUnimplementedRepoServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedRepoServiceServer struct{}
 
 func (UnimplementedRepoServiceServer) ListRepos(context.Context, *ListReposRequest) (*ListReposResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListRepos not implemented")
+}
+func (UnimplementedRepoServiceServer) AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddRepo not implemented")
 }
 func (UnimplementedRepoServiceServer) mustEmbedUnimplementedRepoServiceServer() {}
 func (UnimplementedRepoServiceServer) testEmbeddedByValue()                     {}
@@ -104,6 +120,24 @@ func _RepoService_ListRepos_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RepoService_AddRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddRepoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServiceServer).AddRepo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepoService_AddRepo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServiceServer).AddRepo(ctx, req.(*AddRepoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RepoService_ServiceDesc is the grpc.ServiceDesc for RepoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var RepoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListRepos",
 			Handler:    _RepoService_ListRepos_Handler,
+		},
+		{
+			MethodName: "AddRepo",
+			Handler:    _RepoService_AddRepo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

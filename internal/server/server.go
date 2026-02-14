@@ -8,6 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"mitra/internal/config"
 	"mitra/internal/proto"
 )
 
@@ -15,7 +16,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, World!")
 }
 
-func Start(cfg *proto.Config) error {
+func Start(cfg *config.Config) error {
 	grpcServer := grpc.NewServer()
 	repoService := NewRepoServiceServer()
 	proto.RegisterRepoServiceServer(grpcServer, repoService)

@@ -6,16 +6,26 @@ option go_package = "mitra/internal/proto";
 
 message Repo {
   string id = 1;
-  string name = 2;
-  string path = 3;
+  string github_url = 2;
+  string owner = 3;
+  string repo = 4;
 }
 
 service RepoService {
   rpc ListRepos(ListReposRequest) returns (ListReposResponse);
+  rpc AddRepo(AddRepoRequest) returns (AddRepoResponse);
 }
 
 message ListReposRequest {}
 
 message ListReposResponse {
   repeated Repo repos = 1;
+}
+
+message AddRepoRequest {
+  string github_url = 1;
+}
+
+message AddRepoResponse {
+  Repo repo = 1;
 }

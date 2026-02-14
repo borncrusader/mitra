@@ -24,8 +24,9 @@ const (
 type Repo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Path          string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
+	GithubUrl     string                 `protobuf:"bytes,2,opt,name=github_url,json=githubUrl,proto3" json:"github_url,omitempty"`
+	Owner         string                 `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+	Repo          string                 `protobuf:"bytes,4,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -67,16 +68,23 @@ func (x *Repo) GetId() string {
 	return ""
 }
 
-func (x *Repo) GetName() string {
+func (x *Repo) GetGithubUrl() string {
 	if x != nil {
-		return x.Name
+		return x.GithubUrl
 	}
 	return ""
 }
 
-func (x *Repo) GetPath() string {
+func (x *Repo) GetOwner() string {
 	if x != nil {
-		return x.Path
+		return x.Owner
+	}
+	return ""
+}
+
+func (x *Repo) GetRepo() string {
+	if x != nil {
+		return x.Repo
 	}
 	return ""
 }
@@ -161,20 +169,116 @@ func (x *ListReposResponse) GetRepos() []*Repo {
 	return nil
 }
 
+type AddRepoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GithubUrl     string                 `protobuf:"bytes,1,opt,name=github_url,json=githubUrl,proto3" json:"github_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddRepoRequest) Reset() {
+	*x = AddRepoRequest{}
+	mi := &file_internal_proto_repo_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddRepoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddRepoRequest) ProtoMessage() {}
+
+func (x *AddRepoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_repo_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddRepoRequest.ProtoReflect.Descriptor instead.
+func (*AddRepoRequest) Descriptor() ([]byte, []int) {
+	return file_internal_proto_repo_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AddRepoRequest) GetGithubUrl() string {
+	if x != nil {
+		return x.GithubUrl
+	}
+	return ""
+}
+
+type AddRepoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Repo          *Repo                  `protobuf:"bytes,1,opt,name=repo,proto3" json:"repo,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddRepoResponse) Reset() {
+	*x = AddRepoResponse{}
+	mi := &file_internal_proto_repo_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddRepoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddRepoResponse) ProtoMessage() {}
+
+func (x *AddRepoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_repo_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddRepoResponse.ProtoReflect.Descriptor instead.
+func (*AddRepoResponse) Descriptor() ([]byte, []int) {
+	return file_internal_proto_repo_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AddRepoResponse) GetRepo() *Repo {
+	if x != nil {
+		return x.Repo
+	}
+	return nil
+}
+
 var File_internal_proto_repo_proto protoreflect.FileDescriptor
 
 const file_internal_proto_repo_proto_rawDesc = "" +
 	"\n" +
-	"\x19internal/proto/repo.proto\x12\x05proto\">\n" +
+	"\x19internal/proto/repo.proto\x12\x05proto\"_\n" +
 	"\x04Repo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04path\x18\x03 \x01(\tR\x04path\"\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"github_url\x18\x02 \x01(\tR\tgithubUrl\x12\x14\n" +
+	"\x05owner\x18\x03 \x01(\tR\x05owner\x12\x12\n" +
+	"\x04repo\x18\x04 \x01(\tR\x04repo\"\x12\n" +
 	"\x10ListReposRequest\"6\n" +
 	"\x11ListReposResponse\x12!\n" +
-	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos2M\n" +
+	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos\"/\n" +
+	"\x0eAddRepoRequest\x12\x1d\n" +
+	"\n" +
+	"github_url\x18\x01 \x01(\tR\tgithubUrl\"2\n" +
+	"\x0fAddRepoResponse\x12\x1f\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo2\x87\x01\n" +
 	"\vRepoService\x12>\n" +
-	"\tListRepos\x12\x17.proto.ListReposRequest\x1a\x18.proto.ListReposResponseB\x16Z\x14mitra/internal/protob\x06proto3"
+	"\tListRepos\x12\x17.proto.ListReposRequest\x1a\x18.proto.ListReposResponse\x128\n" +
+	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponseB\x16Z\x14mitra/internal/protob\x06proto3"
 
 var (
 	file_internal_proto_repo_proto_rawDescOnce sync.Once
@@ -188,21 +292,26 @@ func file_internal_proto_repo_proto_rawDescGZIP() []byte {
 	return file_internal_proto_repo_proto_rawDescData
 }
 
-var file_internal_proto_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_internal_proto_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_internal_proto_repo_proto_goTypes = []any{
 	(*Repo)(nil),              // 0: proto.Repo
 	(*ListReposRequest)(nil),  // 1: proto.ListReposRequest
 	(*ListReposResponse)(nil), // 2: proto.ListReposResponse
+	(*AddRepoRequest)(nil),    // 3: proto.AddRepoRequest
+	(*AddRepoResponse)(nil),   // 4: proto.AddRepoResponse
 }
 var file_internal_proto_repo_proto_depIdxs = []int32{
 	0, // 0: proto.ListReposResponse.repos:type_name -> proto.Repo
-	1, // 1: proto.RepoService.ListRepos:input_type -> proto.ListReposRequest
-	2, // 2: proto.RepoService.ListRepos:output_type -> proto.ListReposResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 1: proto.AddRepoResponse.repo:type_name -> proto.Repo
+	1, // 2: proto.RepoService.ListRepos:input_type -> proto.ListReposRequest
+	3, // 3: proto.RepoService.AddRepo:input_type -> proto.AddRepoRequest
+	2, // 4: proto.RepoService.ListRepos:output_type -> proto.ListReposResponse
+	4, // 5: proto.RepoService.AddRepo:output_type -> proto.AddRepoResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_internal_proto_repo_proto_init() }
@@ -216,7 +325,7 @@ func file_internal_proto_repo_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_proto_repo_proto_rawDesc), len(file_internal_proto_repo_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
