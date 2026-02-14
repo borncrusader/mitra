@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"os"
@@ -15,7 +15,7 @@ type ServerConfig struct {
 	Port string `toml:"port"`
 }
 
-func DefaultConfig() *Config {
+func Default() *Config {
 	return &Config{
 		Server: ServerConfig{
 			Port: ":9999",
@@ -23,7 +23,7 @@ func DefaultConfig() *Config {
 	}
 }
 
-func ConfigPath() (string, error) {
+func Path() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
@@ -31,27 +31,27 @@ func ConfigPath() (string, error) {
 	return filepath.Join(homeDir, ".mitra", "config.toml"), nil
 }
 
-func LoadConfig() (*Config, error) {
-	configPath, err := ConfigPath()
+func Load() (*Config, error) {
+	configPath, err := Path()
 	if err != nil {
 		return nil, err
 	}
 
-	config := DefaultConfig()
+	cfg := Default()
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return config, nil
+		return cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(configPath, config); err != nil {
+	if _, err := toml.DecodeFile(configPath, cfg); err != nil {
 		return nil, err
 	}
 
-	return config, nil
+	return cfg, nil
 }
 
-func GenerateConfig() error {
-	configPath, err := ConfigPath()
+func Generate() error {
+	configPath, err := Path()
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,12 @@ func GenerateConfig() error {
 	}
 	defer file.Close()
 
-	config := DefaultConfig()
+	cfg := Default()
 	encoder := toml.NewEncoder(file)
-	return encoder.Encode(config)
+	return encoder.Encode(cfg)
+}
+
+func Dump(cfg *Config) error {
+	encoder := toml.NewEncoder(os.Stdout)
+	return encoder.Encode(cfg)
 }

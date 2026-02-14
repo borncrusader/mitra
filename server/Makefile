@@ -5,13 +5,13 @@ BUILD_DIR=bin
 
 build:
 	@mkdir -p $(BUILD_DIR)
-	@go build -o $(BUILD_DIR)/$(BINARY_NAME) .
+	@go build -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/mitra
 
 run: build
 	@./$(BUILD_DIR)/$(BINARY_NAME) server
 
 dev:
-	@go run main.go
+	@go run ./cmd/mitra
 
 clean:
 	@rm -rf $(BUILD_DIR)
