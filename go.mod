@@ -1,4 +1,4 @@
-module server
+module mitra
 
 go 1.25.6
 

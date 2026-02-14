@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"server/internal/config"
+	"mitra/internal/config"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {

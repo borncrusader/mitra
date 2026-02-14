@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"server/internal/config"
-	"server/internal/server"
+	"mitra/internal/config"
+	"mitra/internal/server"
 )
 
 var rootCmd = &cobra.Command{
