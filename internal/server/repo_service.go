@@ -25,21 +25,22 @@ func (s *RepoServiceServer) ListRepos(ctx context.Context, req *proto.ListReposR
 	}
 
 	return &proto.ListReposResponse{
-		Repos: repos.Repos,
+		Repos: repos,
 	}, nil
 }
 
 func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequest) (*proto.AddRepoResponse, error) {
-	owner, repoName, err := parseGitHubURL(req.GithubUrl)
+	host, owner, repoName, err := parseGitURL(req.Url)
 	if err != nil {
 		return nil, err
 	}
 
 	repo := &proto.Repo{
-		Id:        util.RandomName(),
-		GithubUrl: req.GithubUrl,
-		Owner:     owner,
-		Repo:      repoName,
+		Id:    util.RandomName(),
+		Url:   req.Url,
+		Host:  host,
+		Owner: owner,
+		Repo:  repoName,
 	}
 
 	repos, err := storage.LoadRepos()
@@ -47,7 +48,7 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		return nil, err
 	}
 
-	repos.Repos = append(repos.Repos, repo)
+	repos = append(repos, repo)
 
 	if err := storage.SaveRepos(repos); err != nil {
 		return nil, err
@@ -58,17 +59,24 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 	}, nil
 }
 
-func parseGitHubURL(url string) (owner, repo string, err error) {
+func parseGitURL(url string) (host, owner, repo string, err error) {
+	original := url
+
+	// Remove protocol if present
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.TrimPrefix(url, "http://")
-	url = strings.TrimPrefix(url, "github.com/")
 	url = strings.TrimSuffix(url, ".git")
 	url = strings.Trim(url, "/")
 
+	// Must have at least host/owner/repo
 	parts := strings.Split(url, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid GitHub URL format, expected owner/repo")
+	if len(parts) != 3 {
+		return "", "", "", fmt.Errorf("invalid git URL: expected host/owner/repo, got: %s", original)
 	}
 
-	return parts[0], parts[1], nil
+	if parts[0] == "" || parts[1] == "" || parts[2] == "" {
+		return "", "", "", fmt.Errorf("invalid git URL: host, owner, and repo cannot be empty, got: %s", original)
+	}
+
+	return parts[0], parts[1], parts[2], nil
 }

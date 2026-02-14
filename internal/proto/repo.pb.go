@@ -24,9 +24,10 @@ const (
 type Repo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GithubUrl     string                 `protobuf:"bytes,2,opt,name=github_url,json=githubUrl,proto3" json:"github_url,omitempty"`
-	Owner         string                 `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
-	Repo          string                 `protobuf:"bytes,4,opt,name=repo,proto3" json:"repo,omitempty"`
+	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	Host          string                 `protobuf:"bytes,3,opt,name=host,proto3" json:"host,omitempty"`
+	Owner         string                 `protobuf:"bytes,4,opt,name=owner,proto3" json:"owner,omitempty"`
+	Repo          string                 `protobuf:"bytes,5,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -68,9 +69,16 @@ func (x *Repo) GetId() string {
 	return ""
 }
 
-func (x *Repo) GetGithubUrl() string {
+func (x *Repo) GetUrl() string {
 	if x != nil {
-		return x.GithubUrl
+		return x.Url
+	}
+	return ""
+}
+
+func (x *Repo) GetHost() string {
+	if x != nil {
+		return x.Host
 	}
 	return ""
 }
@@ -171,7 +179,7 @@ func (x *ListReposResponse) GetRepos() []*Repo {
 
 type AddRepoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	GithubUrl     string                 `protobuf:"bytes,1,opt,name=github_url,json=githubUrl,proto3" json:"github_url,omitempty"`
+	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -206,9 +214,9 @@ func (*AddRepoRequest) Descriptor() ([]byte, []int) {
 	return file_internal_proto_repo_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *AddRepoRequest) GetGithubUrl() string {
+func (x *AddRepoRequest) GetUrl() string {
 	if x != nil {
-		return x.GithubUrl
+		return x.Url
 	}
 	return ""
 }
@@ -261,19 +269,18 @@ var File_internal_proto_repo_proto protoreflect.FileDescriptor
 
 const file_internal_proto_repo_proto_rawDesc = "" +
 	"\n" +
-	"\x19internal/proto/repo.proto\x12\x05proto\"_\n" +
+	"\x19internal/proto/repo.proto\x12\x05proto\"f\n" +
 	"\x04Repo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
-	"\n" +
-	"github_url\x18\x02 \x01(\tR\tgithubUrl\x12\x14\n" +
-	"\x05owner\x18\x03 \x01(\tR\x05owner\x12\x12\n" +
-	"\x04repo\x18\x04 \x01(\tR\x04repo\"\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url\x12\x12\n" +
+	"\x04host\x18\x03 \x01(\tR\x04host\x12\x14\n" +
+	"\x05owner\x18\x04 \x01(\tR\x05owner\x12\x12\n" +
+	"\x04repo\x18\x05 \x01(\tR\x04repo\"\x12\n" +
 	"\x10ListReposRequest\"6\n" +
 	"\x11ListReposResponse\x12!\n" +
-	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos\"/\n" +
-	"\x0eAddRepoRequest\x12\x1d\n" +
-	"\n" +
-	"github_url\x18\x01 \x01(\tR\tgithubUrl\"2\n" +
+	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos\"\"\n" +
+	"\x0eAddRepoRequest\x12\x10\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\"2\n" +
 	"\x0fAddRepoResponse\x12\x1f\n" +
 	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo2\x87\x01\n" +
 	"\vRepoService\x12>\n" +

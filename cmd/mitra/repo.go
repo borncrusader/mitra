@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"mitra/internal/config"
 	"mitra/internal/proto"
+	"mitra/internal/storage"
 )
 
 var repoCmd = &cobra.Command{
@@ -20,11 +23,11 @@ var repoCmd = &cobra.Command{
 }
 
 var repoAddCmd = &cobra.Command{
-	Use:   "add <github-url>",
+	Use:   "add <git-url>",
 	Short: "Add a repository",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		githubURL := args[0]
+		gitURL := args[0]
 
 		cfg, err := config.Load()
 		if err != nil {
@@ -42,7 +45,7 @@ var repoAddCmd = &cobra.Command{
 		defer cancel()
 
 		resp, err := client.AddRepo(ctx, &proto.AddRepoRequest{
-			GithubUrl: githubURL,
+			Url: gitURL,
 		})
 		if err != nil {
 			log.Fatalf("Failed to add repo: %v", err)
@@ -77,15 +80,29 @@ var repoListCmd = &cobra.Command{
 		}
 
 		if len(resp.Repos) == 0 {
-			fmt.Println("No repos configured")
 			return
 		}
 
-		for _, repo := range resp.Repos {
-			fmt.Printf("%s/%s\n", repo.Owner, repo.Repo)
-			fmt.Printf("  ID: %s\n", repo.Id)
-			fmt.Printf("  URL: %s\n", repo.GithubUrl)
-			fmt.Println()
+		storageRepos := make([]*storage.Repo, len(resp.Repos))
+		for i, r := range resp.Repos {
+			storageRepos[i] = &storage.Repo{
+				ID:    r.Id,
+				URL:   r.Url,
+				Host:  r.Host,
+				Owner: r.Owner,
+				Repo:  r.Repo,
+			}
+		}
+
+		repoStorage := struct {
+			Repos []*storage.Repo `toml:"repos"`
+		}{
+			Repos: storageRepos,
+		}
+
+		encoder := toml.NewEncoder(os.Stdout)
+		if err := encoder.Encode(repoStorage); err != nil {
+			log.Fatalf("Failed to encode repos: %v", err)
 		}
 	},
 }
