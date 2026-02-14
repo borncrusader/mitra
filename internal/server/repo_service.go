@@ -51,17 +51,30 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		Repo:  repoName,
 	}
 
+	repos, err := storage.LoadRepos()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, existingRepo := range repos {
+		if existingRepo.Host == host && existingRepo.Owner == owner && existingRepo.Repo == repoName {
+			s.logger.Info().
+				Str("host", host).
+				Str("owner", owner).
+				Str("repo", repoName).
+				Msg("repository already exists, skipping")
+			return &proto.AddRepoResponse{
+				Repo: existingRepo,
+			}, nil
+		}
+	}
+
 	s.logger.Info().
 		Str("host", host).
 		Str("owner", owner).
 		Str("repo", repoName).
 		Str("url", req.Url).
 		Msg("adding repository")
-
-	repos, err := storage.LoadRepos()
-	if err != nil {
-		return nil, err
-	}
 
 	repos = append(repos, repo)
 
