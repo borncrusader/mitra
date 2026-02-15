@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/mattn/go-runewidth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -36,6 +38,8 @@ type dataLoadedMsg struct {
 	worktrees []*proto.Worktree
 	err       error
 }
+
+type tickMsg time.Time
 
 type repoItem struct {
 	repo      *proto.Repo
@@ -71,26 +75,39 @@ func (i repoItem) FilterValue() string {
 }
 
 type DashboardModel struct {
-	width     int
-	height    int
-	quitting  bool
-	state     viewState
-	activeTab tabView
-	repos     []*proto.Repo
-	worktrees []*proto.Worktree
-	reposList list.Model
-	loading   bool
-	err       error
+	width         int
+	height        int
+	quitting      bool
+	state         viewState
+	activeTab     tabView
+	repos         []*proto.Repo
+	worktrees     []*proto.Worktree
+	reposList     list.Model
+	loading       bool
+	err           error
+	spinner       spinner.Model
+	connecting    bool
+	nextRetryTime time.Time
 }
 
 func NewDashboard() DashboardModel {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
 	return DashboardModel{
-		state: stateWelcome,
+		state:   stateWelcome,
+		spinner: s,
 	}
 }
 
 func (m DashboardModel) Init() tea.Cmd {
 	return nil
+}
+
+func tickCmd() tea.Cmd {
+	return tea.Tick(1*time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }
 
 func loadData() tea.Msg {
@@ -144,12 +161,12 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case "tab":
-			if m.state == stateDashboard {
+			if m.state == stateDashboard && !m.connecting {
 				m.activeTab = (m.activeTab + 1) % 2
 			}
 			return m, nil
 		case "shift+tab":
-			if m.state == stateDashboard {
+			if m.state == stateDashboard && !m.connecting {
 				m.activeTab = (m.activeTab - 1 + 2) % 2
 			}
 			return m, nil
@@ -157,7 +174,8 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == stateWelcome && !m.loading {
 				m.state = stateDashboard
 				m.loading = true
-				return m, loadData
+				m.connecting = true
+				return m, tea.Batch(loadData, m.spinner.Tick)
 			}
 
 			// Delegate to list if in Repos tab
@@ -171,7 +189,10 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		if msg.err != nil {
 			m.err = msg.err
+			m.nextRetryTime = time.Now().Add(5 * time.Second)
+			return m, tickCmd()
 		} else {
+			m.connecting = false
 			m.repos = msg.repos
 			m.worktrees = msg.worktrees
 
@@ -190,6 +211,19 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.reposList.SetFilteringEnabled(true)
 		}
 		return m, nil
+	case tickMsg:
+		if m.connecting {
+			if time.Now().After(m.nextRetryTime) {
+				m.loading = true
+				return m, loadData
+			}
+			return m, tickCmd()
+		}
+		return m, nil
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
 	}
 
 	return m, nil
@@ -244,17 +278,20 @@ func (m DashboardModel) renderWelcome() string {
 }
 
 func (m DashboardModel) renderDashboard() string {
-	if m.loading {
-		lines := []string{"Loading..."}
-		return m.centerContent(lines)
-	}
-
-	if m.err != nil {
-		lines := []string{
-			"Error loading data:",
-			m.err.Error(),
-			"",
-			"Press q to quit",
+	if m.connecting {
+		var lines []string
+		if m.nextRetryTime.IsZero() {
+			lines = []string{
+				fmt.Sprintf("%s Connecting to server...", m.spinner.View()),
+			}
+		} else {
+			secondsLeft := int(time.Until(m.nextRetryTime).Seconds())
+			if secondsLeft < 0 {
+				secondsLeft = 0
+			}
+			lines = []string{
+				fmt.Sprintf("%s Connecting to server in %d seconds...", m.spinner.View(), secondsLeft),
+			}
 		}
 		return m.centerContent(lines)
 	}
