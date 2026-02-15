@@ -72,3 +72,13 @@ make completion
 # Clean build artifacts
 make clean
 ```
+
+### Installing golangci-lint
+
+```bash
+# macOS
+brew install golangci-lint
+
+# Or using go install
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
