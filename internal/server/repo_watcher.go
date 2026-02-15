@@ -12,15 +12,21 @@ import (
 	"mitra/internal/git"
 )
 
+type repoCommand interface {
+	Execute(w *RepoWatcher) error
+}
+
 type RepoWatcher struct {
-	logger   zerolog.Logger
-	cfg      *config.Config
-	repoURL  string
-	repoID   string
-	owner    string
-	repoName string
-	repoDir  string
-	service  *MitraServiceServer
+	logger      zerolog.Logger
+	cfg         *config.Config
+	repoURL     string
+	repoID      string
+	owner       string
+	repoName    string
+	repoDir     string
+	service     *MitraServiceServer
+	commandChan chan repoCommand
+	cloneReady  bool
 }
 
 func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, owner, repoName, repoDir string, service *MitraServiceServer) *RepoWatcher {
@@ -30,13 +36,15 @@ func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, 
 			Str("owner", owner).
 			Str("repo", repoName).
 			Logger(),
-		cfg:      cfg,
-		repoURL:  repoURL,
-		repoID:   repoID,
-		owner:    owner,
-		repoName: repoName,
-		repoDir:  repoDir,
-		service:  service,
+		cfg:         cfg,
+		repoURL:     repoURL,
+		repoID:      repoID,
+		owner:       owner,
+		repoName:    repoName,
+		repoDir:     repoDir,
+		service:     service,
+		commandChan: make(chan repoCommand, 10),
+		cloneReady:  false,
 	}
 }
 
@@ -60,6 +68,7 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 		w.logger.Info().
 			Str("path", cloneDir).
 			Msg("clone directory already exists, skipping clone")
+		w.cloneReady = true
 	} else {
 		w.logger.Info().
 			Str("url", w.repoURL).
@@ -83,6 +92,8 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 				Err(err).
 				Msg("failed to create worktree entry")
 		}
+
+		w.cloneReady = true
 	}
 
 	syncInterval := time.Duration(w.cfg.Repo.SyncIntervalSecs) * time.Second
@@ -91,13 +102,20 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 
 	w.logger.Info().
 		Int("interval_secs", w.cfg.Repo.SyncIntervalSecs).
-		Msg("starting periodic sync")
+		Msg("starting repo watcher")
 
 	for {
 		select {
 		case <-ctx.Done():
 			w.logger.Info().Msg("stopping watcher due to context cancellation")
 			return
+		case cmd := <-w.commandChan:
+			w.logger.Debug().Msg("processing repo command")
+			if err := cmd.Execute(w); err != nil {
+				w.logger.Warn().
+					Err(err).
+					Msg("command execution failed")
+			}
 		case <-ticker.C:
 			isClean, err := git.IsClean(cloneDir)
 			if err != nil {
@@ -131,4 +149,8 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 
 func (w *RepoWatcher) createWorktreeEntry(branch, path string) error {
 	return w.service.AddWorktreeEntry(w.repoID, branch, path, true)
+}
+
+func (w *RepoWatcher) SendCommand(cmd repoCommand) {
+	w.commandChan <- cmd
 }

@@ -11,18 +11,20 @@ import (
 	"github.com/rs/zerolog"
 
 	"mitra/internal/config"
-	"mitra/internal/git"
 	"mitra/internal/proto"
 	"mitra/internal/util"
 )
 
 type MitraServiceServer struct {
 	proto.UnimplementedMitraServiceServer
-	logger zerolog.Logger
-	cfg    *config.Config
-	ctx    context.Context
-	wg     *sync.WaitGroup
-	state  *State
+	logger         zerolog.Logger
+	cfg            *config.Config
+	ctx            context.Context
+	wg             *sync.WaitGroup
+	state          *State
+	watchers       map[string]*RepoWatcher
+	sessionManager *SessionManager
+	mu             sync.RWMutex
 }
 
 func NewMitraServiceServer(logger zerolog.Logger, cfg *config.Config, ctx context.Context, wg *sync.WaitGroup) (*MitraServiceServer, error) {
@@ -31,17 +33,29 @@ func NewMitraServiceServer(logger zerolog.Logger, cfg *config.Config, ctx contex
 		return nil, err
 	}
 
-	// Hydrate tmux sessions for existing worktrees
-	if err := state.HydrateTmuxSessions(); err != nil {
-		logger.Warn().Err(err).Msg("failed to hydrate tmux sessions, continuing anyway")
+	sessionManager := NewSessionManager(logger, cfg, state)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		sessionManager.Start(ctx)
+	}()
+
+	// Add tmux sessions for existing worktrees
+	addCmd := NewAddSessionsCommand()
+	sessionManager.SendCommand(addCmd)
+	if err := <-addCmd.responseChan; err != nil {
+		logger.Warn().Err(err).Msg("failed to add tmux sessions, continuing anyway")
 	}
 
 	return &MitraServiceServer{
-		logger: logger.With().Str("service", "mitra").Logger(),
-		cfg:    cfg,
-		ctx:    ctx,
-		wg:     wg,
-		state:  state,
+		logger:         logger.With().Str("service", "mitra").Logger(),
+		cfg:            cfg,
+		ctx:            ctx,
+		wg:             wg,
+		state:          state,
+		watchers:       make(map[string]*RepoWatcher),
+		sessionManager: sessionManager,
 	}, nil
 }
 
@@ -56,6 +70,11 @@ func (s *MitraServiceServer) StartExistingWatchers() error {
 		repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
 
 		watcher := NewRepoWatcher(s.logger, s.cfg, repo.Url, repo.Id, repo.Owner, repo.Repo, repoDir, s)
+
+		s.mu.Lock()
+		s.watchers[repo.Id] = watcher
+		s.mu.Unlock()
+
 		s.wg.Add(1)
 		go func(w *RepoWatcher) {
 			defer s.wg.Done()
@@ -120,6 +139,11 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 	}
 
 	watcher := NewRepoWatcher(s.logger, s.cfg, req.Url, repo.Id, owner, repoName, repoDir, s)
+
+	s.mu.Lock()
+	s.watchers[repo.Id] = watcher
+	s.mu.Unlock()
+
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
@@ -138,6 +162,14 @@ func (s *MitraServiceServer) ListWorktrees(ctx context.Context, req *proto.ListW
 }
 
 func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWorktreeRequest) (*proto.AddWorktreeResponse, error) {
+	s.mu.RLock()
+	watcher, exists := s.watchers[req.RepoId]
+	s.mu.RUnlock()
+
+	if !exists {
+		return nil, fmt.Errorf("repo watcher not found for repo: %s", req.RepoId)
+	}
+
 	mainWorktree := s.state.FindMainWorktree(req.RepoId)
 	if mainWorktree == nil {
 		return nil, fmt.Errorf("main worktree not found for repo: %s", req.RepoId)
@@ -149,67 +181,28 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 		branch = *req.Branch
 	}
 
-	branchWithPrefix := s.cfg.Repo.BranchPrefix + branch
-
-	if existing := s.state.CheckWorktreeExists(req.RepoId, branchWithPrefix); existing != nil {
-		s.logger.Info().
-			Str("repo_id", req.RepoId).
-			Str("branch", branch).
-			Msg("worktree already exists")
-		return &proto.AddWorktreeResponse{
-			Worktree: existing,
-		}, nil
-	}
-
 	parentBranch := mainWorktree.Branch
 	if req.ParentBranch != nil && *req.ParentBranch != "" {
 		parentBranch = *req.ParentBranch
 	}
 
-	repoPath := filepath.Dir(mainWorktree.Path)
-	worktreePath := filepath.Join(repoPath, branch)
-
-	s.logger.Info().
-		Str("repo_id", req.RepoId).
-		Str("branch", branchWithPrefix).
-		Str("parent_branch", parentBranch).
-		Str("path", worktreePath).
-		Msg("creating worktree")
-
-	if err := git.CreateWorktree(mainWorktree.Path, branchWithPrefix, worktreePath, parentBranch); err != nil {
-		return nil, err
+	responseChan := make(chan *addWorktreeResult, 1)
+	cmd := &addWorktreeCmd{
+		worktreeID:   worktreeID,
+		branch:       branch,
+		parentBranch: parentBranch,
+		responseChan: responseChan,
 	}
 
-	worktree := &proto.Worktree{
-		Id:           worktreeID,
-		RepoId:       req.RepoId,
-		Branch:       branchWithPrefix,
-		Path:         worktreePath,
-		IsMain:       false,
-		ParentBranch: &parentBranch,
-	}
+	watcher.SendCommand(cmd)
 
-	if err := s.state.AddWorktree(worktree); err != nil {
-		return nil, err
-	}
-
-	s.logger.Info().
-		Str("repo_id", req.RepoId).
-		Str("branch", branch).
-		Str("path", worktreePath).
-		Msg("worktree created successfully")
-
-	// Create tmux session for the worktree
-	if err := s.state.CreateTmuxSession(worktreeID, worktreePath); err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("session", worktreeID).
-			Str("path", worktreePath).
-			Msg("failed to create tmux session, continuing anyway")
+	result := <-responseChan
+	if result.err != nil {
+		return nil, result.err
 	}
 
 	return &proto.AddWorktreeResponse{
-		Worktree: worktree,
+		Worktree: result.worktree,
 	}, nil
 }
 
@@ -246,44 +239,30 @@ func (s *MitraServiceServer) AddWorktreeEntry(repoID, branch, path string, isMai
 }
 
 func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.DeleteWorktreeRequest) (*proto.DeleteWorktreeResponse, error) {
-	worktreeToDelete, index := s.state.FindWorktreeByID(req.WorktreeId)
+	worktreeToDelete, _ := s.state.FindWorktreeByID(req.WorktreeId)
 	if worktreeToDelete == nil {
 		return nil, fmt.Errorf("worktree not found: %s", req.WorktreeId)
 	}
 
-	if worktreeToDelete.IsMain {
-		return nil, fmt.Errorf("cannot delete main worktree")
+	s.mu.RLock()
+	watcher, exists := s.watchers[worktreeToDelete.RepoId]
+	s.mu.RUnlock()
+
+	if !exists {
+		return nil, fmt.Errorf("repo watcher not found for repo: %s", worktreeToDelete.RepoId)
 	}
 
-	mainWorktree := s.state.FindMainWorktree(worktreeToDelete.RepoId)
-	if mainWorktree == nil {
-		return nil, fmt.Errorf("main worktree not found for repo")
+	responseChan := make(chan error, 1)
+	cmd := &deleteWorktreeCmd{
+		worktreeID:   req.WorktreeId,
+		responseChan: responseChan,
 	}
 
-	s.logger.Info().
-		Str("worktree_id", req.WorktreeId).
-		Str("branch", worktreeToDelete.Branch).
-		Str("path", worktreeToDelete.Path).
-		Msg("deleting worktree")
+	watcher.SendCommand(cmd)
 
-	if err := git.RemoveWorktree(mainWorktree.Path, worktreeToDelete.Path); err != nil {
+	err := <-responseChan
+	if err != nil {
 		return nil, err
-	}
-
-	if err := s.state.DeleteWorktree(index); err != nil {
-		return nil, err
-	}
-
-	s.logger.Info().
-		Str("worktree_id", req.WorktreeId).
-		Msg("worktree deleted successfully")
-
-	// Kill tmux session if it exists
-	if err := s.state.KillTmuxSession(worktreeToDelete.Id); err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("session", worktreeToDelete.Id).
-			Msg("failed to kill tmux session, continuing anyway")
 	}
 
 	return &proto.DeleteWorktreeResponse{
