@@ -64,17 +64,17 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	cfg := Default()
+	var cfg Config
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return cfg, nil
+		return &cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(configPath, cfg); err != nil {
+	if _, err := toml.DecodeFile(configPath, &cfg); err != nil {
 		return nil, err
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
 
 func Generate() error {
