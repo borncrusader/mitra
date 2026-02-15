@@ -16,6 +16,7 @@ import (
 	"mitra/internal/config"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
+	"mitra/internal/tui"
 	"mitra/internal/util"
 )
 
@@ -25,27 +26,10 @@ var worktreeCmd = &cobra.Command{
 }
 
 var worktreeAddCmd = &cobra.Command{
-	Use:   "add <repo-id> [branch[:parent-branch]]",
+	Use:   "add [repo-id] [branch[:parent-branch]]",
 	Short: "Add a new worktree",
-	Args:  cobra.RangeArgs(1, 2),
+	Args:  cobra.RangeArgs(0, 2),
 	Run: func(cmd *cobra.Command, args []string) {
-		repoID := args[0]
-
-		var branch string
-		var parentBranch *string
-
-		if len(args) == 2 {
-			branchArg := args[1]
-			parts := strings.SplitN(branchArg, ":", 2)
-
-			branch = parts[0]
-			if len(parts) == 2 {
-				if parts[1] != "" {
-					parentBranch = &parts[1]
-				}
-			}
-		}
-
 		cfg, err := config.Load()
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to load config")
@@ -58,6 +42,42 @@ var worktreeAddCmd = &cobra.Command{
 		defer util.DeferCheck(conn.Close)
 
 		client := proto.NewMitraServiceClient(conn)
+
+		var repoID string
+		var branch string
+		var parentBranch *string
+
+		if len(args) == 0 {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			listResp, err := client.ListRepos(ctx, &proto.ListReposRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list repos")
+			}
+
+			selectedRepo, err := tui.SelectRepo(listResp.Repos)
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to select repo")
+			}
+
+			repoID = selectedRepo.Id
+		} else {
+			repoID = args[0]
+
+			if len(args) == 2 {
+				branchArg := args[1]
+				parts := strings.SplitN(branchArg, ":", 2)
+
+				branch = parts[0]
+				if len(parts) == 2 {
+					if parts[1] != "" {
+						parentBranch = &parts[1]
+					}
+				}
+			}
+		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 

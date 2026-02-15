@@ -33,9 +33,10 @@ make test
 # List repositories
 ./bin/mitra repo list
 
-# Create a worktree
-./bin/mitra worktree add <repo-id> [branch[:parent-branch]]
+# Create a worktree (interactive TUI if no args)
+./bin/mitra worktree add [repo-id] [branch[:parent-branch]]
 # Examples:
+#   mitra worktree add                       # interactive repo selection
 #   mitra worktree add repo-123              # uses generated ID, main as parent
 #   mitra worktree add repo-123 feature      # 'feature' from main
 #   mitra worktree add repo-123 feature:dev  # 'feature' from dev
