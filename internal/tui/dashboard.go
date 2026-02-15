@@ -23,6 +23,13 @@ const (
 	stateDashboard
 )
 
+type tabView int
+
+const (
+	tabOverview tabView = iota
+	tabRepos
+)
+
 type dataLoadedMsg struct {
 	repos     []*proto.Repo
 	worktrees []*proto.Worktree
@@ -34,6 +41,7 @@ type DashboardModel struct {
 	height    int
 	quitting  bool
 	state     viewState
+	activeTab tabView
 	repos     []*proto.Repo
 	worktrees []*proto.Worktree
 	loading   bool
@@ -94,6 +102,16 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			m.quitting = true
 			return m, tea.Quit
+		case "tab", "right":
+			if m.state == stateDashboard {
+				m.activeTab = (m.activeTab + 1) % 2
+			}
+			return m, nil
+		case "shift+tab", "left":
+			if m.state == stateDashboard {
+				m.activeTab = (m.activeTab - 1 + 2) % 2
+			}
+			return m, nil
 		default:
 			if m.state == stateWelcome && !m.loading {
 				m.state = stateDashboard
@@ -128,6 +146,21 @@ func (m DashboardModel) View() string {
 	}
 
 	return ""
+}
+
+func (m DashboardModel) renderTabs() string {
+	tabs := []string{"Overview", "Repos"}
+	var tabStrs []string
+
+	for i, tab := range tabs {
+		if tabView(i) == m.activeTab {
+			tabStrs = append(tabStrs, fmt.Sprintf("[ %s ]", tab))
+		} else {
+			tabStrs = append(tabStrs, fmt.Sprintf("  %s  ", tab))
+		}
+	}
+
+	return strings.Join(tabStrs, " ")
 }
 
 func (m DashboardModel) renderWelcome() string {
@@ -165,36 +198,83 @@ func (m DashboardModel) renderDashboard() string {
 	}
 
 	var lines []string
+	lines = append(lines, "")
 	lines = append(lines, "MITRA DASHBOARD")
 	lines = append(lines, "")
+	lines = append(lines, m.renderTabs())
+	lines = append(lines, "")
 
-	if len(m.repos) == 0 {
-		lines = append(lines, "No repositories found")
-	} else {
-		for _, repo := range m.repos {
-			lines = append(lines, fmt.Sprintf("📦 %s/%s", repo.Owner, repo.Repo))
-			lines = append(lines, fmt.Sprintf("   ID: %s", repo.Id))
-
-			repoWorktrees := m.getWorktreesForRepo(repo.Id)
-			if len(repoWorktrees) == 0 {
-				lines = append(lines, "   No worktrees")
-			} else {
-				for _, wt := range repoWorktrees {
-					branchIndicator := "  "
-					if wt.IsMain {
-						branchIndicator = "* "
-					}
-					lines = append(lines, fmt.Sprintf("   %s%s", branchIndicator, wt.Branch))
-				}
-			}
-			lines = append(lines, "")
-		}
+	switch m.activeTab {
+	case tabOverview:
+		lines = append(lines, m.renderOverviewTab()...)
+	case tabRepos:
+		lines = append(lines, m.renderReposTab()...)
 	}
 
 	lines = append(lines, "")
-	lines = append(lines, "Press q to quit")
+	lines = append(lines, "Tab/→ next | Shift+Tab/← prev | q quit")
 
-	return m.centerContent(lines)
+	// Add left padding
+	paddedLines := make([]string, len(lines))
+	for i, line := range lines {
+		paddedLines[i] = "  " + line
+	}
+
+	return strings.Join(paddedLines, "\n")
+}
+
+func (m DashboardModel) renderOverviewTab() []string {
+	var lines []string
+
+	repoCount := len(m.repos)
+	worktreeCount := len(m.worktrees)
+
+	lines = append(lines, "═══════════════════════════════════════")
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("Repositories: %d", repoCount))
+	lines = append(lines, fmt.Sprintf("Worktrees:    %d", worktreeCount))
+	lines = append(lines, "")
+	lines = append(lines, "═══════════════════════════════════════")
+
+	return lines
+}
+
+func (m DashboardModel) renderReposTab() []string {
+	var lines []string
+
+	if len(m.repos) == 0 {
+		lines = append(lines, "No repositories found")
+		lines = append(lines, "")
+		lines = append(lines, "Add a repo with: mitra repo add <url>")
+		return lines
+	}
+
+	for i, repo := range m.repos {
+		lines = append(lines, fmt.Sprintf("%d. %s/%s", i+1, repo.Owner, repo.Repo))
+
+		repoWorktrees := m.getWorktreesForRepo(repo.Id)
+		if len(repoWorktrees) == 0 {
+			lines = append(lines, "   └─ No worktrees")
+		} else {
+			for j, wt := range repoWorktrees {
+				isLast := j == len(repoWorktrees)-1
+				prefix := "├─"
+				if isLast {
+					prefix = "└─"
+				}
+
+				indicator := ""
+				if wt.IsMain {
+					indicator = " ★"
+				}
+
+				lines = append(lines, fmt.Sprintf("   %s %s%s", prefix, wt.Branch, indicator))
+			}
+		}
+		lines = append(lines, "")
+	}
+
+	return lines
 }
 
 func (m DashboardModel) getWorktreesForRepo(repoID string) []*proto.Worktree {
