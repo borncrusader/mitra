@@ -124,6 +124,13 @@ func ensureConfigDefaults(logger zerolog.Logger, path string) error {
 		updated = true
 	}
 
+	// Check Session config
+	if len(existingCfg.Session.Panes) == 0 {
+		logger.Info().Msg("adding missing session.panes to config")
+		existingCfg.Session.Panes = defaultCfg.Session.Panes
+		updated = true
+	}
+
 	// Save if updated
 	if updated {
 		logger.Info().Str("path", path).Msg("updating config with missing defaults")

@@ -11,8 +11,9 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig `toml:"server"`
-	Repo   RepoConfig   `toml:"repo"`
+	Server  ServerConfig  `toml:"server"`
+	Repo    RepoConfig    `toml:"repo"`
+	Session SessionConfig `toml:"session"`
 }
 
 type ServerConfig struct {
@@ -24,6 +25,10 @@ type RepoConfig struct {
 	Dir              string `toml:"dir"`
 	SyncIntervalSecs int    `toml:"sync_interval_secs"`
 	BranchPrefix     string `toml:"branch_prefix"`
+}
+
+type SessionConfig struct {
+	Panes []string `toml:"panes"`
 }
 
 func Default() *Config {
@@ -46,6 +51,12 @@ func Default() *Config {
 			Dir:              filepath.Join(homeDir, "code", "work"),
 			SyncIntervalSecs: 600,
 			BranchPrefix:     username + "/",
+		},
+		Session: SessionConfig{
+			Panes: []string{
+				"0.0:claude",
+				"0.1:nvim",
+			},
 		},
 	}
 }

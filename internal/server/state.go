@@ -72,7 +72,7 @@ func (s *State) HydrateTmuxSessions() error {
 			continue
 		}
 
-		if err := tmux.CreateSession(sessionName, wt.Path); err != nil {
+		if err := tmux.CreateSession(sessionName, wt.Path, s.cfg.Session.Panes); err != nil {
 			s.logger.Warn().
 				Err(err).
 				Str("session", sessionName).
@@ -247,7 +247,7 @@ func (s *State) CreateTmuxSession(sessionName, path string) error {
 		return nil
 	}
 
-	if err := tmux.CreateSession(sessionName, path); err != nil {
+	if err := tmux.CreateSession(sessionName, path, s.cfg.Session.Panes); err != nil {
 		return err
 	}
 

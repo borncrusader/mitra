@@ -42,6 +42,10 @@ Config file: `~/.mitra/config.toml`
 - gRPC port: 9998 (default)
 - Repo directory: `~/code/work` (default)
 - Branch prefix: `$USER/` (default) - all branches created with this prefix
+- Session panes: Configure initial panes when creating tmux sessions
+  - Format: `<window>.<pane>:<command with args>`
+  - Pane can be 0 or 1 (left and right panes)
+  - Example: `["0.0:nvim", "0.1:git status"]`
 
 # Data Storage
 Location: `~/.mitra/`
