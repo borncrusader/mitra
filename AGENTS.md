@@ -47,6 +47,9 @@ Config file: `~/.mitra/config.toml`
   - Format: `<window>.<pane>:<command with args>`
   - Pane can be 0 or 1 (left and right panes)
   - Example: `["0.0:nvim", "0.1:git status"]`
+- Agents: Enable/disable AI coding agents
+  - Claude: `true` (default) - Enable Claude agent
+  - Codex: `false` (default) - Enable Codex agent
 
 # Data Storage
 Location: `~/.mitra/`

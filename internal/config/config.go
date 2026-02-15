@@ -14,6 +14,7 @@ type Config struct {
 	Server  ServerConfig  `toml:"server"`
 	Repo    RepoConfig    `toml:"repo"`
 	Session SessionConfig `toml:"session"`
+	Agents  AgentsConfig  `toml:"agents"`
 }
 
 type ServerConfig struct {
@@ -30,6 +31,11 @@ type RepoConfig struct {
 type SessionConfig struct {
 	Type  string   `toml:"type"`
 	Panes []string `toml:"panes"`
+}
+
+type AgentsConfig struct {
+	Claude bool `toml:"claude"`
+	Codex  bool `toml:"codex"`
 }
 
 func Default() *Config {
@@ -59,6 +65,10 @@ func Default() *Config {
 				"0.0:claude",
 				"0.1:nvim",
 			},
+		},
+		Agents: AgentsConfig{
+			Claude: true,
+			Codex:  false,
 		},
 	}
 }

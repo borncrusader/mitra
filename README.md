@@ -75,6 +75,10 @@ panes = [
   "0.0:nvim",
   "0.1:git status"
 ]
+
+[agents]
+claude = true   # Default: true
+codex = false   # Default: false
 ```
 
 ### Session Configuration
@@ -83,6 +87,10 @@ panes = [
   - Format: `<window>.<pane>:<command with args>`
   - Pane can be 0 or 1 (left and right panes)
   - Commands are executed automatically when the session is created
+
+### Agents Configuration
+- **claude**: Enable Claude AI coding agent (default: `true`)
+- **codex**: Enable Codex AI coding agent (default: `false`)
 
 ## Development
 
