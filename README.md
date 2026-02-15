@@ -77,8 +77,11 @@ panes = [
 ]
 
 [agents]
-claude = true   # Default: true
 codex = false   # Default: false
+
+[agents.claude]
+enabled = true            # Default: true
+trust_by_default = true   # Default: true
 ```
 
 ### Session Configuration
@@ -89,7 +92,9 @@ codex = false   # Default: false
   - Commands are executed automatically when the session is created
 
 ### Agents Configuration
-- **claude**: Enable Claude AI coding agent (default: `true`)
+- **claude**: Claude AI coding agent configuration
+  - **enabled**: Enable Claude agent (default: `true`)
+  - **trust_by_default**: Trust Claude operations by default (default: `true`)
 - **codex**: Enable Codex AI coding agent (default: `false`)
 
 ## Development

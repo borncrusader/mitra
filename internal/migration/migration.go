@@ -136,8 +136,8 @@ func ensureConfigDefaults(logger zerolog.Logger, path string) error {
 		updated = true
 	}
 
-	// Check Agents config (if both are false, assume not configured yet)
-	if !existingCfg.Agents.Claude && !existingCfg.Agents.Codex {
+	// Check Agents config
+	if !existingCfg.Agents.Claude.Enabled && !existingCfg.Agents.Codex {
 		logger.Info().Msg("adding missing agents config")
 		existingCfg.Agents = defaultCfg.Agents
 		updated = true

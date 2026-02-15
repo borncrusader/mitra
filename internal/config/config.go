@@ -34,8 +34,13 @@ type SessionConfig struct {
 }
 
 type AgentsConfig struct {
-	Claude bool `toml:"claude"`
-	Codex  bool `toml:"codex"`
+	Claude ClaudeAgentConfig `toml:"claude"`
+	Codex  bool              `toml:"codex"`
+}
+
+type ClaudeAgentConfig struct {
+	Enabled         bool `toml:"enabled"`
+	TrustByDefault  bool `toml:"trust_by_default"`
 }
 
 func Default() *Config {
@@ -67,8 +72,11 @@ func Default() *Config {
 			},
 		},
 		Agents: AgentsConfig{
-			Claude: true,
-			Codex:  false,
+			Claude: ClaudeAgentConfig{
+				Enabled:        true,
+				TrustByDefault: true,
+			},
+			Codex: false,
 		},
 	}
 }
