@@ -12,7 +12,7 @@ help:
 	@echo "  lint       - Run golangci-lint"
 	@echo "  lint-fix   - Run golangci-lint with auto-fix"
 	@echo "  protogen   - Generate Go code from proto files"
-	@echo "  completion - Generate zsh completion file"
+	@echo "  shell      - Generate shell artifacts like aliases and completion (zsh only)"
 	@echo "  clean      - Remove build artifacts"
 
 build:
@@ -39,9 +39,9 @@ protogen:
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
 		internal/proto/*.proto
 
-completion: build
-	@./$(BUILD_DIR)/$(BINARY_NAME) completion zsh > .zsh.completion
-	@echo "Zsh completion written to .zsh.completion"
+shell: build
+	@./$(BUILD_DIR)/$(BINARY_NAME) completion zsh > shell/zsh.completion
+	@echo "Zsh completion written to shell/zsh.completion"
 
 clean:
 	@rm -rf $(BUILD_DIR)
