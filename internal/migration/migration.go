@@ -125,6 +125,11 @@ func ensureConfigDefaults(logger zerolog.Logger, path string) error {
 	}
 
 	// Check Session config
+	if existingCfg.Session.Type == "" {
+		logger.Info().Msg("adding missing session.type to config")
+		existingCfg.Session.Type = defaultCfg.Session.Type
+		updated = true
+	}
 	if len(existingCfg.Session.Panes) == 0 {
 		logger.Info().Msg("adding missing session.panes to config")
 		existingCfg.Session.Panes = defaultCfg.Session.Panes

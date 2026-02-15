@@ -28,6 +28,7 @@ type RepoConfig struct {
 }
 
 type SessionConfig struct {
+	Type  string   `toml:"type"`
 	Panes []string `toml:"panes"`
 }
 
@@ -53,6 +54,7 @@ func Default() *Config {
 			BranchPrefix:     username + "/",
 		},
 		Session: SessionConfig{
+			Type: "tmux",
 			Panes: []string{
 				"0.0:claude",
 				"0.1:nvim",

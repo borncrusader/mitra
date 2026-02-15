@@ -70,17 +70,19 @@ sync_interval_secs = 600
 branch_prefix = "username/"  # Default: $USER/
 
 [session]
+type = "tmux"  # Default: tmux
 panes = [
   "0.0:nvim",
   "0.1:git status"
 ]
 ```
 
-### Session Panes
-Configure initial panes when creating tmux sessions:
-- Format: `<window>.<pane>:<command with args>`
-- Pane can be 0 or 1 (left and right panes)
-- Commands are executed automatically when the session is created
+### Session Configuration
+- **type**: Type of session manager to use (default: `tmux`)
+- **panes**: Configure initial panes when creating tmux sessions
+  - Format: `<window>.<pane>:<command with args>`
+  - Pane can be 0 or 1 (left and right panes)
+  - Commands are executed automatically when the session is created
 
 ## Development
 
