@@ -19,7 +19,7 @@ make test
 
 ```bash
 # Start server
-./bin/mitra server
+./bin/mitra serve
 
 # Show config
 ./bin/mitra config show

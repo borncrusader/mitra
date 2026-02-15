@@ -4,6 +4,7 @@ Repos, Worktrees, Branches and Agents
 # Important
 1. Don't add any "Co-authored" text in commit messages
 2. Don't add any unnecessary comments or logs unless I ask you to
+3. When you update any CLI commands, update the AGENTS.md and README.md as well
 
 # Project Structure
 - `cmd/mitra/` - Main application entry point with CLI commands
@@ -58,7 +59,7 @@ Available Commands:
   config      Manage configuration
   help        Help about any command
   repo        Manage repositories
-  server      Start the server
+  serve       Start the server
 
 Flags:
   -h, --help   help for mitra
@@ -67,7 +68,7 @@ Use "mitra [command] --help" for more information about a command.
 ```
 
 # Commands
-- `mitra server` - Start HTTP + gRPC servers
+- `mitra serve` - Start HTTP + gRPC servers
 - `mitra config show` - Show current config
 - `mitra config generate` - Generate default config file
 - `mitra repo add <url>` - Add a repository

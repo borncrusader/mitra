@@ -17,8 +17,8 @@ var rootCmd = &cobra.Command{
 	Short: "Mitra - Repos, Worktrees, Branches and Agents",
 }
 
-var serverCmd = &cobra.Command{
-	Use:   "server",
+var serveCmd = &cobra.Command{
+	Use:   "serve",
 	Short: "Start the server",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
@@ -67,7 +67,7 @@ func init() {
 
 	configCmd.AddCommand(configShowCmd)
 	configCmd.AddCommand(configGenerateCmd)
-	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(configCmd)
 }
 
