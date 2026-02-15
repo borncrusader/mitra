@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -52,7 +51,11 @@ var repoAddCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("failed to add repo")
 		}
 
-		fmt.Printf("Added repo: %s/%s (id: %s)\n", resp.Repo.Owner, resp.Repo.Repo, resp.Repo.Id)
+		log.Info().
+			Str("owner", resp.Repo.Owner).
+			Str("repo", resp.Repo.Repo).
+			Str("id", resp.Repo.Id).
+			Msg("added repo")
 	},
 }
 

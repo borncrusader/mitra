@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -96,7 +95,10 @@ var worktreeAddCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("failed to add worktree")
 		}
 
-		fmt.Printf("Created worktree: %s at %s\n", resp.Worktree.Branch, resp.Worktree.Path)
+		log.Info().
+			Str("branch", resp.Worktree.Branch).
+			Str("path", resp.Worktree.Path).
+			Msg("created worktree")
 	},
 }
 
@@ -211,7 +213,7 @@ var worktreeDeleteCmd = &cobra.Command{
 		}
 
 		if resp.Success {
-			fmt.Printf("Worktree deleted successfully\n")
+			log.Info().Str("worktree_id", worktreeID).Msg("worktree deleted")
 		}
 	},
 }

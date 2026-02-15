@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -61,7 +60,7 @@ var configGenerateCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to get config path")
 		}
-		fmt.Printf("Config generated at %s\n", configPath)
+		log.Info().Str("path", configPath).Msg("config generated")
 	},
 }
 
