@@ -57,7 +57,10 @@ var configGenerateCmd = &cobra.Command{
 		if err := config.Generate(); err != nil {
 			log.Fatal().Err(err).Msg("failed to generate config")
 		}
-		configPath, _ := config.Path()
+		configPath, err := config.Path()
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to get config path")
+		}
 		fmt.Printf("Config generated at %s\n", configPath)
 	},
 }

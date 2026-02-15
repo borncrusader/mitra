@@ -19,8 +19,10 @@ import (
 	"mitra/internal/util"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, World!")
+func helloHandler(w http.ResponseWriter, _ *http.Request) {
+	if _, err := fmt.Fprintf(w, "Hello, World!"); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func Start(cfg *config.Config) error {

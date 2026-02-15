@@ -16,6 +16,7 @@ import (
 	"mitra/internal/config"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
+	"mitra/internal/util"
 )
 
 var worktreeCmd = &cobra.Command{
@@ -54,7 +55,7 @@ var worktreeAddCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to connect to server")
 		}
-		defer conn.Close()
+		defer util.DeferCheck(conn.Close)
 
 		client := proto.NewMitraServiceClient(conn)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -93,7 +94,7 @@ var worktreeListCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to connect to server")
 		}
-		defer conn.Close()
+		defer util.DeferCheck(conn.Close)
 
 		client := proto.NewMitraServiceClient(conn)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+
+	"mitra/internal/util"
 )
 
 type Config struct {
@@ -24,7 +26,10 @@ type RepoConfig struct {
 }
 
 func Default() *Config {
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		homeDir = "."
+	}
 	return &Config{
 		Server: ServerConfig{
 			Port:     ":9999",
@@ -83,7 +88,7 @@ func Generate() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer util.DeferCheck(file.Close)
 
 	cfg := Default()
 	encoder := toml.NewEncoder(file)

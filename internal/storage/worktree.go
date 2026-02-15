@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 
 	"mitra/internal/proto"
+	"mitra/internal/util"
 )
 
 type Worktree struct {
@@ -102,7 +103,7 @@ func SaveWorktrees(worktrees []*proto.Worktree) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer util.DeferCheck(file.Close)
 
 	encoder := toml.NewEncoder(file)
 	return encoder.Encode(storage)

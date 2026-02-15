@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 
 	"mitra/internal/proto"
+	"mitra/internal/util"
 )
 
 type Repo struct {
@@ -99,7 +100,7 @@ func SaveRepos(repos []*proto.Repo) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer util.DeferCheck(file.Close)
 
 	encoder := toml.NewEncoder(file)
 	return encoder.Encode(storage)
