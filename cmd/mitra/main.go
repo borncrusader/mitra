@@ -8,12 +8,18 @@ import (
 
 	"mitra/internal/config"
 	"mitra/internal/server"
+	"mitra/internal/tui"
 	"mitra/internal/util"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "mitra",
 	Short: "Mitra - Repos, Worktrees, Branches and Agents",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := tui.RunDashboard(); err != nil {
+			log.Fatal().Err(err).Msg("failed to run dashboard")
+		}
+	},
 }
 
 var serveCmd = &cobra.Command{

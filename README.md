@@ -18,6 +18,9 @@ make test
 ## Commands
 
 ```bash
+# Launch TUI dashboard (default)
+./bin/mitra
+
 # Start server
 ./bin/mitra serve
 

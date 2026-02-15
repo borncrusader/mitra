@@ -93,7 +93,14 @@ Flags:
 Use "mitra [command] --help" for more information about a command.
 ```
 
+# Dashboard
+- Running `mitra` without any command launches the TUI dashboard
+- Shows ASCII art logo and project tagline
+- Press `q` or `Ctrl+C` to quit the dashboard
+- All subcommands work as before
+
 # Commands
+- `mitra` - Launch TUI dashboard (default command)
 - `mitra serve` - Start HTTP + gRPC servers
 - `mitra config show` - Show current config
 - `mitra config generate` - Generate default config file
