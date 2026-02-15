@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -23,12 +24,26 @@ var worktreeCmd = &cobra.Command{
 }
 
 var worktreeAddCmd = &cobra.Command{
-	Use:   "add <repo-id> <branch>",
+	Use:   "add <repo-id> [branch[:parent-branch]]",
 	Short: "Add a new worktree",
-	Args:  cobra.ExactArgs(2),
+	Args:  cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		repoID := args[0]
-		branch := args[1]
+
+		var branch string
+		var parentBranch *string
+
+		if len(args) == 2 {
+			branchArg := args[1]
+			parts := strings.SplitN(branchArg, ":", 2)
+
+			branch = parts[0]
+			if len(parts) == 2 {
+				if parts[1] != "" {
+					parentBranch = &parts[1]
+				}
+			}
+		}
 
 		cfg, err := config.Load()
 		if err != nil {
@@ -45,10 +60,17 @@ var worktreeAddCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		resp, err := client.AddWorktree(ctx, &proto.AddWorktreeRequest{
+		req := &proto.AddWorktreeRequest{
 			RepoId: repoID,
-			Branch: branch,
-		})
+		}
+		if branch != "" {
+			req.Branch = &branch
+		}
+		if parentBranch != nil {
+			req.ParentBranch = parentBranch
+		}
+
+		resp, err := client.AddWorktree(ctx, req)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to add worktree")
 		}

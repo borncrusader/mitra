@@ -44,7 +44,7 @@ message AddRepoResponse {
 
 message AddWorktreeRequest {
   string repo_id = 1;
-  string branch = 2;
+  optional string branch = 2;
   optional string parent_branch = 3;
 }
 

@@ -52,10 +52,15 @@ Location: `~/.mitra/`
 
 # Worktrees
 - Automatically creates main/master worktree when repo is added
-- Create new worktrees with `mitra worktree add <repo-id> <branch>`
+- Create new worktrees with `mitra worktree add <repo-id> [branch[:parent-branch]]`
+- Branch syntax:
+  - Omit branch: uses generated ID as branch name, main as parent
+  - `feature`: uses 'feature' as branch, main as parent
+  - `feature:develop`: uses 'feature' as branch, 'develop' as parent
+  - `:develop`: uses generated ID as branch, 'develop' as parent
 - All worktrees stored in repo directory: `~/code/work/owner/repo/branch`
 - Only main worktree is monitored and synced automatically
-- CLI: `mitra worktree add <repo-id> <branch>`, `mitra worktree list [repo-id]`
+- CLI: `mitra worktree add <repo-id> [branch[:parent-branch]]`, `mitra worktree list [repo-id]`
 
 # Usage
 ```
@@ -84,7 +89,7 @@ Use "mitra [command] --help" for more information about a command.
 - `mitra config generate` - Generate default config file
 - `mitra repo add <url>` - Add a repository
 - `mitra repo list` - List repos (TOML format)
-- `mitra worktree add <repo-id> <branch>` - Create a new worktree
+- `mitra worktree add <repo-id> [branch[:parent-branch]]` - Create a new worktree
 - `mitra worktree list [repo-id]` - List worktrees (TOML format)
 
 # Development

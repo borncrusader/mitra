@@ -165,18 +165,6 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	for _, existing := range s.worktrees {
-		if existing.RepoId == req.RepoId && existing.Branch == req.Branch {
-			s.logger.Info().
-				Str("repo_id", req.RepoId).
-				Str("branch", req.Branch).
-				Msg("worktree already exists")
-			return &proto.AddWorktreeResponse{
-				Worktree: existing,
-			}, nil
-		}
-	}
-
 	var mainWorktree *proto.Worktree
 	for _, wt := range s.worktrees {
 		if wt.RepoId == req.RepoId && wt.IsMain {
@@ -189,30 +177,48 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 		return nil, fmt.Errorf("main worktree not found for repo: %s", req.RepoId)
 	}
 
+	worktreeID := util.RandomName()
+	branch := worktreeID
+	if req.Branch != nil && *req.Branch != "" {
+		branch = *req.Branch
+	}
+
+	for _, existing := range s.worktrees {
+		if existing.RepoId == req.RepoId && existing.Branch == branch {
+			s.logger.Info().
+				Str("repo_id", req.RepoId).
+				Str("branch", branch).
+				Msg("worktree already exists")
+			return &proto.AddWorktreeResponse{
+				Worktree: existing,
+			}, nil
+		}
+	}
+
 	parentBranch := mainWorktree.Branch
 	if req.ParentBranch != nil && *req.ParentBranch != "" {
 		parentBranch = *req.ParentBranch
 	}
 
 	repoPath := filepath.Dir(mainWorktree.Path)
-	worktreePath := filepath.Join(repoPath, req.Branch)
+	worktreePath := filepath.Join(repoPath, branch)
 
 	s.logger.Info().
 		Str("repo_id", req.RepoId).
-		Str("branch", req.Branch).
+		Str("branch", branch).
 		Str("parent_branch", parentBranch).
 		Str("path", worktreePath).
 		Msg("creating worktree")
 
-	cmd := exec.Command("git", "-C", mainWorktree.Path, "worktree", "add", "-b", req.Branch, worktreePath, parentBranch)
+	cmd := exec.Command("git", "-C", mainWorktree.Path, "worktree", "add", "-b", branch, worktreePath, parentBranch)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("failed to create git worktree: %w, output: %s", err, string(output))
 	}
 
 	worktree := &proto.Worktree{
-		Id:           util.RandomName(),
+		Id:           worktreeID,
 		RepoId:       req.RepoId,
-		Branch:       req.Branch,
+		Branch:       branch,
 		Path:         worktreePath,
 		IsMain:       false,
 		ParentBranch: &parentBranch,
@@ -227,7 +233,7 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 
 	s.logger.Info().
 		Str("repo_id", req.RepoId).
-		Str("branch", req.Branch).
+		Str("branch", branch).
 		Str("path", worktreePath).
 		Msg("worktree created successfully")
 

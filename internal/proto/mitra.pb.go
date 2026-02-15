@@ -352,7 +352,7 @@ func (x *AddRepoResponse) GetRepo() *Repo {
 type AddWorktreeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	Branch        string                 `protobuf:"bytes,2,opt,name=branch,proto3" json:"branch,omitempty"`
+	Branch        *string                `protobuf:"bytes,2,opt,name=branch,proto3,oneof" json:"branch,omitempty"`
 	ParentBranch  *string                `protobuf:"bytes,3,opt,name=parent_branch,json=parentBranch,proto3,oneof" json:"parent_branch,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -396,8 +396,8 @@ func (x *AddWorktreeRequest) GetRepoId() string {
 }
 
 func (x *AddWorktreeRequest) GetBranch() string {
-	if x != nil {
-		return x.Branch
+	if x != nil && x.Branch != nil {
+		return *x.Branch
 	}
 	return ""
 }
@@ -566,11 +566,12 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x0eAddRepoRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\"2\n" +
 	"\x0fAddRepoResponse\x12\x1f\n" +
-	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"\x81\x01\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"\x91\x01\n" +
 	"\x12AddWorktreeRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x16\n" +
-	"\x06branch\x18\x02 \x01(\tR\x06branch\x12(\n" +
-	"\rparent_branch\x18\x03 \x01(\tH\x00R\fparentBranch\x88\x01\x01B\x10\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1b\n" +
+	"\x06branch\x18\x02 \x01(\tH\x00R\x06branch\x88\x01\x01\x12(\n" +
+	"\rparent_branch\x18\x03 \x01(\tH\x01R\fparentBranch\x88\x01\x01B\t\n" +
+	"\a_branchB\x10\n" +
 	"\x0e_parent_branch\"B\n" +
 	"\x13AddWorktreeResponse\x12+\n" +
 	"\bworktree\x18\x01 \x01(\v2\x0f.proto.WorktreeR\bworktree\"/\n" +

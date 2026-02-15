@@ -34,7 +34,7 @@ make test
 ./bin/mitra repo list
 
 # Create a worktree
-./bin/mitra worktree add <repo-id> <branch-name>
+./bin/mitra worktree add <repo-id> [branch[:parent-branch]]
 
 # List worktrees
 ./bin/mitra worktree list [repo-id]
