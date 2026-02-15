@@ -26,6 +26,7 @@ service MitraService {
   rpc AddRepo(AddRepoRequest) returns (AddRepoResponse);
   rpc AddWorktree(AddWorktreeRequest) returns (AddWorktreeResponse);
   rpc ListWorktrees(ListWorktreesRequest) returns (ListWorktreesResponse);
+  rpc DeleteWorktree(DeleteWorktreeRequest) returns (DeleteWorktreeResponse);
 }
 
 message ListReposRequest {}
@@ -58,4 +59,12 @@ message ListWorktreesRequest {
 
 message ListWorktreesResponse {
   repeated Worktree worktrees = 1;
+}
+
+message DeleteWorktreeRequest {
+  string worktree_id = 1;
+}
+
+message DeleteWorktreeResponse {
+  bool success = 1;
 }

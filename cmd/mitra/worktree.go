@@ -161,8 +161,64 @@ var worktreeListCmd = &cobra.Command{
 	},
 }
 
+var worktreeDeleteCmd = &cobra.Command{
+	Use:   "delete [worktree-id]",
+	Short: "Delete a worktree",
+	Args:  cobra.RangeArgs(0, 1),
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg, err := config.Load()
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to load config")
+		}
+
+		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to connect to server")
+		}
+		defer util.DeferCheck(conn.Close)
+
+		client := proto.NewMitraServiceClient(conn)
+
+		var worktreeID string
+
+		if len(args) == 0 {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			listResp, err := client.ListWorktrees(ctx, &proto.ListWorktreesRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list worktrees")
+			}
+
+			selectedWorktree, err := tui.SelectWorktree(listResp.Worktrees)
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to select worktree")
+			}
+
+			worktreeID = selectedWorktree.Id
+		} else {
+			worktreeID = args[0]
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		resp, err := client.DeleteWorktree(ctx, &proto.DeleteWorktreeRequest{
+			WorktreeId: worktreeID,
+		})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to delete worktree")
+		}
+
+		if resp.Success {
+			fmt.Printf("Worktree deleted successfully\n")
+		}
+	},
+}
+
 func init() {
 	worktreeCmd.AddCommand(worktreeAddCmd)
 	worktreeCmd.AddCommand(worktreeListCmd)
+	worktreeCmd.AddCommand(worktreeDeleteCmd)
 	rootCmd.AddCommand(worktreeCmd)
 }

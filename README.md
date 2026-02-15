@@ -44,6 +44,12 @@ make test
 
 # List worktrees
 ./bin/mitra worktree list [repo-id]
+
+# Delete a worktree (interactive TUI if no args)
+./bin/mitra worktree delete [worktree-id]
+# Examples:
+#   mitra worktree delete                    # interactive worktree selection
+#   mitra worktree delete worktree-id-123    # delete specific worktree
 ```
 
 ## Configuration

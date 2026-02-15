@@ -282,6 +282,66 @@ func (s *MitraServiceServer) AddWorktreeEntry(repoID, branch, path string, isMai
 	return nil
 }
 
+func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.DeleteWorktreeRequest) (*proto.DeleteWorktreeResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	var worktreeToDelete *proto.Worktree
+	var index int
+
+	for i, wt := range s.worktrees {
+		if wt.Id == req.WorktreeId {
+			worktreeToDelete = wt
+			index = i
+			break
+		}
+	}
+
+	if worktreeToDelete == nil {
+		return nil, fmt.Errorf("worktree not found: %s", req.WorktreeId)
+	}
+
+	if worktreeToDelete.IsMain {
+		return nil, fmt.Errorf("cannot delete main worktree")
+	}
+
+	var mainWorktree *proto.Worktree
+	for _, wt := range s.worktrees {
+		if wt.RepoId == worktreeToDelete.RepoId && wt.IsMain {
+			mainWorktree = wt
+			break
+		}
+	}
+
+	if mainWorktree == nil {
+		return nil, fmt.Errorf("main worktree not found for repo")
+	}
+
+	s.logger.Info().
+		Str("worktree_id", req.WorktreeId).
+		Str("branch", worktreeToDelete.Branch).
+		Str("path", worktreeToDelete.Path).
+		Msg("deleting worktree")
+
+	if err := git.RemoveWorktree(mainWorktree.Path, worktreeToDelete.Path); err != nil {
+		return nil, err
+	}
+
+	s.worktrees = append(s.worktrees[:index], s.worktrees[index+1:]...)
+
+	if err := storage.SaveWorktrees(s.worktrees); err != nil {
+		return nil, err
+	}
+
+	s.logger.Info().
+		Str("worktree_id", req.WorktreeId).
+		Msg("worktree deleted successfully")
+
+	return &proto.DeleteWorktreeResponse{
+		Success: true,
+	}, nil
+}
+
 func parseGitURL(url string) (host, owner, repo string, err error) {
 	original := url
 

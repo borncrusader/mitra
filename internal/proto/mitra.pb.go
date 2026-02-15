@@ -541,6 +541,94 @@ func (x *ListWorktreesResponse) GetWorktrees() []*Worktree {
 	return nil
 }
 
+type DeleteWorktreeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorktreeId    string                 `protobuf:"bytes,1,opt,name=worktree_id,json=worktreeId,proto3" json:"worktree_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteWorktreeRequest) Reset() {
+	*x = DeleteWorktreeRequest{}
+	mi := &file_internal_proto_mitra_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteWorktreeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteWorktreeRequest) ProtoMessage() {}
+
+func (x *DeleteWorktreeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_mitra_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteWorktreeRequest.ProtoReflect.Descriptor instead.
+func (*DeleteWorktreeRequest) Descriptor() ([]byte, []int) {
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *DeleteWorktreeRequest) GetWorktreeId() string {
+	if x != nil {
+		return x.WorktreeId
+	}
+	return ""
+}
+
+type DeleteWorktreeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteWorktreeResponse) Reset() {
+	*x = DeleteWorktreeResponse{}
+	mi := &file_internal_proto_mitra_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteWorktreeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteWorktreeResponse) ProtoMessage() {}
+
+func (x *DeleteWorktreeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_mitra_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteWorktreeResponse.ProtoReflect.Descriptor instead.
+func (*DeleteWorktreeResponse) Descriptor() ([]byte, []int) {
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *DeleteWorktreeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_internal_proto_mitra_proto protoreflect.FileDescriptor
 
 const file_internal_proto_mitra_proto_rawDesc = "" +
@@ -578,12 +666,18 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x14ListWorktreesRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"F\n" +
 	"\x15ListWorktreesResponse\x12-\n" +
-	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees2\x9a\x02\n" +
+	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees\"8\n" +
+	"\x15DeleteWorktreeRequest\x12\x1f\n" +
+	"\vworktree_id\x18\x01 \x01(\tR\n" +
+	"worktreeId\"2\n" +
+	"\x16DeleteWorktreeResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xe9\x02\n" +
 	"\fMitraService\x12>\n" +
 	"\tListRepos\x12\x17.proto.ListReposRequest\x1a\x18.proto.ListReposResponse\x128\n" +
 	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponse\x12D\n" +
 	"\vAddWorktree\x12\x19.proto.AddWorktreeRequest\x1a\x1a.proto.AddWorktreeResponse\x12J\n" +
-	"\rListWorktrees\x12\x1b.proto.ListWorktreesRequest\x1a\x1c.proto.ListWorktreesResponseB\x16Z\x14mitra/internal/protob\x06proto3"
+	"\rListWorktrees\x12\x1b.proto.ListWorktreesRequest\x1a\x1c.proto.ListWorktreesResponse\x12M\n" +
+	"\x0eDeleteWorktree\x12\x1c.proto.DeleteWorktreeRequest\x1a\x1d.proto.DeleteWorktreeResponseB\x16Z\x14mitra/internal/protob\x06proto3"
 
 var (
 	file_internal_proto_mitra_proto_rawDescOnce sync.Once
@@ -597,37 +691,41 @@ func file_internal_proto_mitra_proto_rawDescGZIP() []byte {
 	return file_internal_proto_mitra_proto_rawDescData
 }
 
-var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_internal_proto_mitra_proto_goTypes = []any{
-	(*Repo)(nil),                  // 0: proto.Repo
-	(*Worktree)(nil),              // 1: proto.Worktree
-	(*ListReposRequest)(nil),      // 2: proto.ListReposRequest
-	(*ListReposResponse)(nil),     // 3: proto.ListReposResponse
-	(*AddRepoRequest)(nil),        // 4: proto.AddRepoRequest
-	(*AddRepoResponse)(nil),       // 5: proto.AddRepoResponse
-	(*AddWorktreeRequest)(nil),    // 6: proto.AddWorktreeRequest
-	(*AddWorktreeResponse)(nil),   // 7: proto.AddWorktreeResponse
-	(*ListWorktreesRequest)(nil),  // 8: proto.ListWorktreesRequest
-	(*ListWorktreesResponse)(nil), // 9: proto.ListWorktreesResponse
+	(*Repo)(nil),                   // 0: proto.Repo
+	(*Worktree)(nil),               // 1: proto.Worktree
+	(*ListReposRequest)(nil),       // 2: proto.ListReposRequest
+	(*ListReposResponse)(nil),      // 3: proto.ListReposResponse
+	(*AddRepoRequest)(nil),         // 4: proto.AddRepoRequest
+	(*AddRepoResponse)(nil),        // 5: proto.AddRepoResponse
+	(*AddWorktreeRequest)(nil),     // 6: proto.AddWorktreeRequest
+	(*AddWorktreeResponse)(nil),    // 7: proto.AddWorktreeResponse
+	(*ListWorktreesRequest)(nil),   // 8: proto.ListWorktreesRequest
+	(*ListWorktreesResponse)(nil),  // 9: proto.ListWorktreesResponse
+	(*DeleteWorktreeRequest)(nil),  // 10: proto.DeleteWorktreeRequest
+	(*DeleteWorktreeResponse)(nil), // 11: proto.DeleteWorktreeResponse
 }
 var file_internal_proto_mitra_proto_depIdxs = []int32{
-	0, // 0: proto.ListReposResponse.repos:type_name -> proto.Repo
-	0, // 1: proto.AddRepoResponse.repo:type_name -> proto.Repo
-	1, // 2: proto.AddWorktreeResponse.worktree:type_name -> proto.Worktree
-	1, // 3: proto.ListWorktreesResponse.worktrees:type_name -> proto.Worktree
-	2, // 4: proto.MitraService.ListRepos:input_type -> proto.ListReposRequest
-	4, // 5: proto.MitraService.AddRepo:input_type -> proto.AddRepoRequest
-	6, // 6: proto.MitraService.AddWorktree:input_type -> proto.AddWorktreeRequest
-	8, // 7: proto.MitraService.ListWorktrees:input_type -> proto.ListWorktreesRequest
-	3, // 8: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
-	5, // 9: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
-	7, // 10: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
-	9, // 11: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
-	8, // [8:12] is the sub-list for method output_type
-	4, // [4:8] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0,  // 0: proto.ListReposResponse.repos:type_name -> proto.Repo
+	0,  // 1: proto.AddRepoResponse.repo:type_name -> proto.Repo
+	1,  // 2: proto.AddWorktreeResponse.worktree:type_name -> proto.Worktree
+	1,  // 3: proto.ListWorktreesResponse.worktrees:type_name -> proto.Worktree
+	2,  // 4: proto.MitraService.ListRepos:input_type -> proto.ListReposRequest
+	4,  // 5: proto.MitraService.AddRepo:input_type -> proto.AddRepoRequest
+	6,  // 6: proto.MitraService.AddWorktree:input_type -> proto.AddWorktreeRequest
+	8,  // 7: proto.MitraService.ListWorktrees:input_type -> proto.ListWorktreesRequest
+	10, // 8: proto.MitraService.DeleteWorktree:input_type -> proto.DeleteWorktreeRequest
+	3,  // 9: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
+	5,  // 10: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
+	7,  // 11: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
+	9,  // 12: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
+	11, // 13: proto.MitraService.DeleteWorktree:output_type -> proto.DeleteWorktreeResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_internal_proto_mitra_proto_init() }
@@ -643,7 +741,7 @@ func file_internal_proto_mitra_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_proto_mitra_proto_rawDesc), len(file_internal_proto_mitra_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

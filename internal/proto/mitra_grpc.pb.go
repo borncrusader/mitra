@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MitraService_ListRepos_FullMethodName     = "/proto.MitraService/ListRepos"
-	MitraService_AddRepo_FullMethodName       = "/proto.MitraService/AddRepo"
-	MitraService_AddWorktree_FullMethodName   = "/proto.MitraService/AddWorktree"
-	MitraService_ListWorktrees_FullMethodName = "/proto.MitraService/ListWorktrees"
+	MitraService_ListRepos_FullMethodName      = "/proto.MitraService/ListRepos"
+	MitraService_AddRepo_FullMethodName        = "/proto.MitraService/AddRepo"
+	MitraService_AddWorktree_FullMethodName    = "/proto.MitraService/AddWorktree"
+	MitraService_ListWorktrees_FullMethodName  = "/proto.MitraService/ListWorktrees"
+	MitraService_DeleteWorktree_FullMethodName = "/proto.MitraService/DeleteWorktree"
 )
 
 // MitraServiceClient is the client API for MitraService service.
@@ -33,6 +34,7 @@ type MitraServiceClient interface {
 	AddRepo(ctx context.Context, in *AddRepoRequest, opts ...grpc.CallOption) (*AddRepoResponse, error)
 	AddWorktree(ctx context.Context, in *AddWorktreeRequest, opts ...grpc.CallOption) (*AddWorktreeResponse, error)
 	ListWorktrees(ctx context.Context, in *ListWorktreesRequest, opts ...grpc.CallOption) (*ListWorktreesResponse, error)
+	DeleteWorktree(ctx context.Context, in *DeleteWorktreeRequest, opts ...grpc.CallOption) (*DeleteWorktreeResponse, error)
 }
 
 type mitraServiceClient struct {
@@ -83,6 +85,16 @@ func (c *mitraServiceClient) ListWorktrees(ctx context.Context, in *ListWorktree
 	return out, nil
 }
 
+func (c *mitraServiceClient) DeleteWorktree(ctx context.Context, in *DeleteWorktreeRequest, opts ...grpc.CallOption) (*DeleteWorktreeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteWorktreeResponse)
+	err := c.cc.Invoke(ctx, MitraService_DeleteWorktree_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MitraServiceServer is the server API for MitraService service.
 // All implementations must embed UnimplementedMitraServiceServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type MitraServiceServer interface {
 	AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error)
 	AddWorktree(context.Context, *AddWorktreeRequest) (*AddWorktreeResponse, error)
 	ListWorktrees(context.Context, *ListWorktreesRequest) (*ListWorktreesResponse, error)
+	DeleteWorktree(context.Context, *DeleteWorktreeRequest) (*DeleteWorktreeResponse, error)
 	mustEmbedUnimplementedMitraServiceServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedMitraServiceServer) AddWorktree(context.Context, *AddWorktree
 }
 func (UnimplementedMitraServiceServer) ListWorktrees(context.Context, *ListWorktreesRequest) (*ListWorktreesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListWorktrees not implemented")
+}
+func (UnimplementedMitraServiceServer) DeleteWorktree(context.Context, *DeleteWorktreeRequest) (*DeleteWorktreeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteWorktree not implemented")
 }
 func (UnimplementedMitraServiceServer) mustEmbedUnimplementedMitraServiceServer() {}
 func (UnimplementedMitraServiceServer) testEmbeddedByValue()                      {}
@@ -206,6 +222,24 @@ func _MitraService_ListWorktrees_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MitraService_DeleteWorktree_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteWorktreeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MitraServiceServer).DeleteWorktree(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MitraService_DeleteWorktree_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MitraServiceServer).DeleteWorktree(ctx, req.(*DeleteWorktreeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MitraService_ServiceDesc is the grpc.ServiceDesc for MitraService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var MitraService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListWorktrees",
 			Handler:    _MitraService_ListWorktrees_Handler,
+		},
+		{
+			MethodName: "DeleteWorktree",
+			Handler:    _MitraService_DeleteWorktree_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
