@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"mitra/internal/config"
 	"mitra/internal/server"
+	"mitra/internal/util"
 )
 
 var rootCmd = &cobra.Command{
@@ -63,10 +63,7 @@ var configGenerateCmd = &cobra.Command{
 }
 
 func init() {
-	log.Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).
-		With().
-		Timestamp().
-		Logger()
+	log.Logger = util.NewLogger(os.Stderr)
 
 	configCmd.AddCommand(configShowCmd)
 	configCmd.AddCommand(configGenerateCmd)

@@ -51,12 +51,12 @@ func (s *RepoServiceServer) StartExistingWatchers() error {
 	for _, repo := range s.repos {
 		repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
 
-		watcher := NewRepoWatcher(s.logger, s.cfg)
+		watcher := NewRepoWatcher(s.logger, s.cfg, repo.Url, repo.Owner, repo.Repo, repoDir)
 		s.wg.Add(1)
-		go func(r *proto.Repo, dir string) {
+		go func(w *RepoWatcher) {
 			defer s.wg.Done()
-			watcher.Watch(s.ctx, r.Url, r.Owner, r.Repo, dir)
-		}(repo, repoDir)
+			w.Watch(s.ctx)
+		}(watcher)
 
 		s.logger.Info().
 			Str("owner", repo.Owner).
@@ -125,11 +125,11 @@ func (s *RepoServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoReque
 		return nil, fmt.Errorf("failed to create repo directory: %w", err)
 	}
 
-	watcher := NewRepoWatcher(s.logger, s.cfg)
+	watcher := NewRepoWatcher(s.logger, s.cfg, req.Url, owner, repoName, repoDir)
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
-		watcher.Watch(s.ctx, req.Url, owner, repoName, repoDir)
+		watcher.Watch(s.ctx)
 	}()
 
 	return &proto.AddRepoResponse{

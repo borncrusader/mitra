@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"mitra/internal/config"
 	"mitra/internal/proto"
+	"mitra/internal/util"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,10 +23,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Start(cfg *config.Config) error {
-	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).
-		With().
-		Timestamp().
-		Logger()
+	logger := util.NewLogger(os.Stdout)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

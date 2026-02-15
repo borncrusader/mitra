@@ -1,1 +1,4 @@
 bin/
+
+# for testing
+.zsh.completion
