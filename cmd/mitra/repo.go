@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -31,12 +31,12 @@ var repoAddCmd = &cobra.Command{
 
 		cfg, err := config.Load()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to load config")
 		}
 
 		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
-			log.Fatalf("Failed to connect: %v", err)
+			log.Fatal().Err(err).Msg("failed to connect to server")
 		}
 		defer conn.Close()
 
@@ -48,7 +48,7 @@ var repoAddCmd = &cobra.Command{
 			Url: gitURL,
 		})
 		if err != nil {
-			log.Fatalf("Failed to add repo: %v", err)
+			log.Fatal().Err(err).Msg("failed to add repo")
 		}
 
 		fmt.Printf("Added repo: %s/%s (id: %s)\n", resp.Repo.Owner, resp.Repo.Repo, resp.Repo.Id)
@@ -61,12 +61,12 @@ var repoListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to load config")
 		}
 
 		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
-			log.Fatalf("Failed to connect: %v", err)
+			log.Fatal().Err(err).Msg("failed to connect to server")
 		}
 		defer conn.Close()
 
@@ -76,7 +76,7 @@ var repoListCmd = &cobra.Command{
 
 		resp, err := client.ListRepos(ctx, &proto.ListReposRequest{})
 		if err != nil {
-			log.Fatalf("Failed to list repos: %v", err)
+			log.Fatal().Err(err).Msg("failed to list repos")
 		}
 
 		if len(resp.Repos) == 0 {
@@ -102,7 +102,7 @@ var repoListCmd = &cobra.Command{
 
 		encoder := toml.NewEncoder(os.Stdout)
 		if err := encoder.Encode(repoStorage); err != nil {
-			log.Fatalf("Failed to encode repos: %v", err)
+			log.Fatal().Err(err).Msg("failed to encode repos")
 		}
 	},
 }

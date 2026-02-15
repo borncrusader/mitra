@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"mitra/internal/config"
@@ -22,10 +23,10 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to load config")
 		}
 		if err := server.Start(cfg); err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to start server")
 		}
 	},
 }
@@ -41,10 +42,10 @@ var configShowCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to load config")
 		}
 		if err := config.Dump(cfg); err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to dump config")
 		}
 	},
 }
@@ -54,7 +55,7 @@ var configGenerateCmd = &cobra.Command{
 	Short: "Generate default config file",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := config.Generate(); err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("failed to generate config")
 		}
 		configPath, _ := config.Path()
 		fmt.Printf("Config generated at %s\n", configPath)
@@ -62,6 +63,11 @@ var configGenerateCmd = &cobra.Command{
 }
 
 func init() {
+	log.Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).
+		With().
+		Timestamp().
+		Logger()
+
 	configCmd.AddCommand(configShowCmd)
 	configCmd.AddCommand(configGenerateCmd)
 	rootCmd.AddCommand(serverCmd)

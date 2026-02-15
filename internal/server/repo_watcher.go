@@ -72,7 +72,7 @@ func (w *RepoWatcher) Watch(ctx context.Context, repoURL, owner, repoName, repoD
 	defer ticker.Stop()
 
 	logger.Info().
-		Dur("interval", syncInterval).
+		Int("interval_secs", w.cfg.Repo.SyncIntervalSecs).
 		Msg("starting periodic sync")
 
 	for {
