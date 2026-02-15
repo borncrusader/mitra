@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -67,6 +68,10 @@ func Generate() error {
 	configPath, err := Path()
 	if err != nil {
 		return err
+	}
+
+	if _, err := os.Stat(configPath); err == nil {
+		return fmt.Errorf("config file already exists at %s", configPath)
 	}
 
 	configDir := filepath.Dir(configPath)
