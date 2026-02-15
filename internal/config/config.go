@@ -23,6 +23,7 @@ type ServerConfig struct {
 type RepoConfig struct {
 	Dir              string `toml:"dir"`
 	SyncIntervalSecs int    `toml:"sync_interval_secs"`
+	BranchPrefix     string `toml:"branch_prefix"`
 }
 
 func Default() *Config {
@@ -30,6 +31,12 @@ func Default() *Config {
 	if err != nil {
 		homeDir = "."
 	}
+
+	username := os.Getenv("USER")
+	if username == "" {
+		username = "user"
+	}
+
 	return &Config{
 		Server: ServerConfig{
 			Port:     ":9999",
@@ -38,6 +45,7 @@ func Default() *Config {
 		Repo: RepoConfig{
 			Dir:              filepath.Join(homeDir, "code", "work"),
 			SyncIntervalSecs: 600,
+			BranchPrefix:     username + "/",
 		},
 	}
 }

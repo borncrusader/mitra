@@ -41,6 +41,7 @@ Config file: `~/.mitra/config.toml`
 - HTTP port: 9999 (default)
 - gRPC port: 9998 (default)
 - Repo directory: `~/code/work` (default)
+- Branch prefix: `$USER/` (default) - all branches created with this prefix
 
 # Data Storage
 Location: `~/.mitra/`
@@ -61,11 +62,12 @@ Location: `~/.mitra/`
 - Delete worktrees with `mitra worktree delete [worktree-id]`
 - Interactive delete: `mitra worktree delete` (no arguments) shows TUI to select worktree
 - Protection: Cannot delete main worktrees
+- Branch prefix: All branches created with configured prefix (default: `$USER/`)
 - Branch syntax:
   - Omit branch: uses generated ID as branch name, main as parent
-  - `feature`: uses 'feature' as branch, main as parent
-  - `feature:develop`: uses 'feature' as branch, 'develop' as parent
-  - `:develop`: uses generated ID as branch, 'develop' as parent
+  - `feature`: creates branch `$USER/feature` from main
+  - `feature:develop`: creates branch `$USER/feature` from develop
+  - `:develop`: uses generated ID as branch name from develop
 - All worktrees stored in repo directory: `~/code/work/owner/repo/branch`
 - Only main worktree is monitored and synced automatically
 - CLI: `mitra worktree add [repo-id] [branch[:parent-branch]]`, `mitra worktree list [repo-id]`, `mitra worktree delete [worktree-id]`

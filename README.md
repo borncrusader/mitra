@@ -59,6 +59,9 @@ Config file: `~/.mitra/config.toml`
 ```toml
 [server]
 port = ":9999"
+
+[repo]
+branch_prefix = "username/"  # Default: $USER/
 ```
 
 ## Development

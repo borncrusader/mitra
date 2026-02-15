@@ -184,8 +184,10 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 		branch = *req.Branch
 	}
 
+	branchWithPrefix := s.cfg.Repo.BranchPrefix + branch
+
 	for _, existing := range s.worktrees {
-		if existing.RepoId == req.RepoId && existing.Branch == branch {
+		if existing.RepoId == req.RepoId && existing.Branch == branchWithPrefix {
 			s.logger.Info().
 				Str("repo_id", req.RepoId).
 				Str("branch", branch).
@@ -206,19 +208,19 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 
 	s.logger.Info().
 		Str("repo_id", req.RepoId).
-		Str("branch", branch).
+		Str("branch", branchWithPrefix).
 		Str("parent_branch", parentBranch).
 		Str("path", worktreePath).
 		Msg("creating worktree")
 
-	if err := git.CreateWorktree(mainWorktree.Path, branch, worktreePath, parentBranch); err != nil {
+	if err := git.CreateWorktree(mainWorktree.Path, branchWithPrefix, worktreePath, parentBranch); err != nil {
 		return nil, err
 	}
 
 	worktree := &proto.Worktree{
 		Id:           worktreeID,
 		RepoId:       req.RepoId,
-		Branch:       branch,
+		Branch:       branchWithPrefix,
 		Path:         worktreePath,
 		IsMain:       false,
 		ParentBranch: &parentBranch,
