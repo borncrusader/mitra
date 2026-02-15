@@ -49,7 +49,7 @@ func NewMitraServiceServer(logger zerolog.Logger, cfg *config.Config, ctx contex
 	}
 
 	return &MitraServiceServer{
-		logger:         logger.With().Str("service", "mitra").Logger(),
+		logger:         logger,
 		cfg:            cfg,
 		ctx:            ctx,
 		wg:             wg,
