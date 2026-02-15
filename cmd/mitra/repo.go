@@ -40,7 +40,7 @@ var repoAddCmd = &cobra.Command{
 		}
 		defer conn.Close()
 
-		client := proto.NewRepoServiceClient(conn)
+		client := proto.NewMitraServiceClient(conn)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
@@ -70,7 +70,7 @@ var repoListCmd = &cobra.Command{
 		}
 		defer conn.Close()
 
-		client := proto.NewRepoServiceClient(conn)
+		client := proto.NewMitraServiceClient(conn)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 

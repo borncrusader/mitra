@@ -12,15 +12,17 @@ import (
 )
 
 type RepoWatcher struct {
-	logger   zerolog.Logger
-	cfg      *config.Config
-	repoURL  string
-	owner    string
+	logger  zerolog.Logger
+	cfg     *config.Config
+	repoURL string
+	repoID  string
+	owner   string
 	repoName string
-	repoDir  string
+	repoDir string
+	service *MitraServiceServer
 }
 
-func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, owner, repoName, repoDir string) *RepoWatcher {
+func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, owner, repoName, repoDir string, service *MitraServiceServer) *RepoWatcher {
 	return &RepoWatcher{
 		logger: logger.With().
 			Str("component", "repo-watcher").
@@ -29,9 +31,11 @@ func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, owner, r
 			Logger(),
 		cfg:      cfg,
 		repoURL:  repoURL,
+		repoID:   repoID,
 		owner:    owner,
 		repoName: repoName,
 		repoDir:  repoDir,
+		service:  service,
 	}
 }
 
@@ -72,6 +76,12 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 		w.logger.Info().
 			Str("path", cloneDir).
 			Msg("clone completed successfully")
+
+		if err := w.createWorktreeEntry(defaultBranch, cloneDir); err != nil {
+			w.logger.Error().
+				Err(err).
+				Msg("failed to create worktree entry")
+		}
 	}
 
 	syncInterval := time.Duration(w.cfg.Repo.SyncIntervalSecs) * time.Second
@@ -116,4 +126,8 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 				Msg("successfully pulled latest changes")
 		}
 	}
+}
+
+func (w *RepoWatcher) createWorktreeEntry(branch, path string) error {
+	return w.service.AddWorktreeEntry(w.repoID, branch, path, true)
 }

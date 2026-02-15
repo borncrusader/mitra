@@ -31,14 +31,15 @@ func Start(cfg *config.Config) error {
 	var wg sync.WaitGroup
 
 	grpcServer := grpc.NewServer()
-	repoService, err := NewRepoServiceServer(logger, cfg, ctx, &wg)
+	mitraService, err := NewMitraServiceServer(logger, cfg, ctx, &wg)
 	if err != nil {
-		return fmt.Errorf("failed to create repo service: %w", err)
+		return fmt.Errorf("failed to create mitra service: %w", err)
 	}
-	proto.RegisterRepoServiceServer(grpcServer, repoService)
+	proto.RegisterMitraServiceServer(grpcServer, mitraService)
+
 	reflection.Register(grpcServer)
 
-	if err := repoService.StartExistingWatchers(); err != nil {
+	if err := mitraService.StartExistingWatchers(); err != nil {
 		logger.Error().Err(err).Msg("failed to start existing watchers")
 	}
 

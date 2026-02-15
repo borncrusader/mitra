@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "mitra/internal/proto";
+
+message Repo {
+  string id = 1;
+  string url = 2;
+  string host = 3;
+  string owner = 4;
+  string repo = 5;
+}
+
+message Worktree {
+  string id = 1;
+  string repo_id = 2;
+  string branch = 3;
+  string path = 4;
+  bool is_main = 5;
+  optional string parent_branch = 6;
+}
+
+service MitraService {
+  rpc ListRepos(ListReposRequest) returns (ListReposResponse);
+  rpc AddRepo(AddRepoRequest) returns (AddRepoResponse);
+  rpc CreateWorktree(CreateWorktreeRequest) returns (CreateWorktreeResponse);
+  rpc ListWorktrees(ListWorktreesRequest) returns (ListWorktreesResponse);
+}
+
+message ListReposRequest {}
+
+message ListReposResponse {
+  repeated Repo repos = 1;
+}
+
+message AddRepoRequest {
+  string url = 1;
+}
+
+message AddRepoResponse {
+  Repo repo = 1;
+}
+
+message CreateWorktreeRequest {
+  string repo_id = 1;
+  string branch = 2;
+  optional string parent_branch = 3;
+}
+
+message CreateWorktreeResponse {
+  Worktree worktree = 1;
+}
+
+message ListWorktreesRequest {
+  string repo_id = 1;
+}
+
+message ListWorktreesResponse {
+  repeated Worktree worktrees = 1;
+}
