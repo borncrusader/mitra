@@ -63,6 +63,9 @@ make dev
 # Run tests
 make test
 
+# Run linter
+make lint
+
 # Generate zsh completion
 make completion
 
