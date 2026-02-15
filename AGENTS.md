@@ -28,6 +28,7 @@ Repos, Worktrees, Branches and Agents
 - `make dev` - Run in development mode
 - `make test` - Run all tests
 - `make lint` - Run golangci-lint
+- `make lint-fix` - Run golangci-lint with auto-fix
 - `make protogen` - Regenerate proto and gRPC code
 - `make completion` - Generate zsh completion file
 - `make clean` - Remove build artifacts

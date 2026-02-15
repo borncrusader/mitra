@@ -1,4 +1,4 @@
-.PHONY: build run-server clean dev test protogen completion lint help
+.PHONY: build run-server clean dev test protogen completion lint lint-fix help
 
 BINARY_NAME=mitra
 BUILD_DIR=bin
@@ -10,6 +10,7 @@ help:
 	@echo "  dev        - Run server in development mode"
 	@echo "  test       - Run tests"
 	@echo "  lint       - Run golangci-lint"
+	@echo "  lint-fix   - Run golangci-lint with auto-fix"
 	@echo "  protogen   - Generate Go code from proto files"
 	@echo "  completion - Generate zsh completion file"
 	@echo "  clean      - Remove build artifacts"
@@ -29,6 +30,9 @@ test:
 
 lint:
 	@golangci-lint run
+
+lint-fix:
+	@golangci-lint run --fix
 
 protogen:
 	@protoc --go_out=. --go_opt=paths=source_relative \

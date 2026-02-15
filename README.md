@@ -66,6 +66,9 @@ make test
 # Run linter
 make lint
 
+# Run linter with auto-fix
+make lint-fix
+
 # Generate zsh completion
 make completion
 
