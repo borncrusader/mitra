@@ -22,7 +22,7 @@ Repos, Worktrees, Branches and Agents
 - **Storage**: TOML files in `~/.mitra/` (config.toml, repo.toml, worktree.toml)
 - **CLI**: Cobra commands that communicate with gRPC server
 - **In-Memory Cache**: Repos and worktrees cached for fast access
-- **Migrations**: Automatic on startup - creates missing files, ensures main worktrees exist
+- **Migrations**: Automatic on startup - creates missing files, adds missing config fields, ensures main worktrees exist
 
 # Make Targets
 - `make build` - Build the binary to `bin/mitra`

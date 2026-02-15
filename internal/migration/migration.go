@@ -47,6 +47,11 @@ func ensureConfigFiles(logger zerolog.Logger) error {
 		if err := createConfigFile(configPath); err != nil {
 			return err
 		}
+	} else {
+		// Config exists, ensure all default fields are present
+		if err := ensureConfigDefaults(logger, configPath); err != nil {
+			return err
+		}
 	}
 
 	repoPath := filepath.Join(mitraDir, "repo.toml")
@@ -78,6 +83,61 @@ func createConfigFile(path string) error {
 	cfg := config.Default()
 	encoder := toml.NewEncoder(file)
 	return encoder.Encode(cfg)
+}
+
+func ensureConfigDefaults(logger zerolog.Logger, path string) error {
+	// Load existing config
+	existingCfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+
+	defaultCfg := config.Default()
+	updated := false
+
+	// Check Server config
+	if existingCfg.Server.Port == "" {
+		logger.Info().Msg("adding missing server.port to config")
+		existingCfg.Server.Port = defaultCfg.Server.Port
+		updated = true
+	}
+	if existingCfg.Server.GrpcPort == "" {
+		logger.Info().Msg("adding missing server.grpc_port to config")
+		existingCfg.Server.GrpcPort = defaultCfg.Server.GrpcPort
+		updated = true
+	}
+
+	// Check Repo config
+	if existingCfg.Repo.Dir == "" {
+		logger.Info().Msg("adding missing repo.dir to config")
+		existingCfg.Repo.Dir = defaultCfg.Repo.Dir
+		updated = true
+	}
+	if existingCfg.Repo.SyncIntervalSecs == 0 {
+		logger.Info().Msg("adding missing repo.sync_interval_secs to config")
+		existingCfg.Repo.SyncIntervalSecs = defaultCfg.Repo.SyncIntervalSecs
+		updated = true
+	}
+	if existingCfg.Repo.BranchPrefix == "" {
+		logger.Info().Msg("adding missing repo.branch_prefix to config")
+		existingCfg.Repo.BranchPrefix = defaultCfg.Repo.BranchPrefix
+		updated = true
+	}
+
+	// Save if updated
+	if updated {
+		logger.Info().Str("path", path).Msg("updating config with missing defaults")
+		file, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer util.DeferCheck(file.Close)
+
+		encoder := toml.NewEncoder(file)
+		return encoder.Encode(existingCfg)
+	}
+
+	return nil
 }
 
 func createEmptyRepoFile(path string) error {
