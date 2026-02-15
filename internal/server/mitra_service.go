@@ -161,7 +161,7 @@ func (s *MitraServiceServer) ListWorktrees(ctx context.Context, req *proto.ListW
 	}, nil
 }
 
-func (s *MitraServiceServer) CreateWorktree(ctx context.Context, req *proto.CreateWorktreeRequest) (*proto.CreateWorktreeResponse, error) {
+func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWorktreeRequest) (*proto.AddWorktreeResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -171,7 +171,7 @@ func (s *MitraServiceServer) CreateWorktree(ctx context.Context, req *proto.Crea
 				Str("repo_id", req.RepoId).
 				Str("branch", req.Branch).
 				Msg("worktree already exists")
-			return &proto.CreateWorktreeResponse{
+			return &proto.AddWorktreeResponse{
 				Worktree: existing,
 			}, nil
 		}
@@ -231,7 +231,7 @@ func (s *MitraServiceServer) CreateWorktree(ctx context.Context, req *proto.Crea
 		Str("path", worktreePath).
 		Msg("worktree created successfully")
 
-	return &proto.CreateWorktreeResponse{
+	return &proto.AddWorktreeResponse{
 		Worktree: worktree,
 	}, nil
 }

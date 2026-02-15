@@ -349,7 +349,7 @@ func (x *AddRepoResponse) GetRepo() *Repo {
 	return nil
 }
 
-type CreateWorktreeRequest struct {
+type AddWorktreeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
 	Branch        string                 `protobuf:"bytes,2,opt,name=branch,proto3" json:"branch,omitempty"`
@@ -358,20 +358,20 @@ type CreateWorktreeRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateWorktreeRequest) Reset() {
-	*x = CreateWorktreeRequest{}
+func (x *AddWorktreeRequest) Reset() {
+	*x = AddWorktreeRequest{}
 	mi := &file_internal_proto_mitra_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateWorktreeRequest) String() string {
+func (x *AddWorktreeRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateWorktreeRequest) ProtoMessage() {}
+func (*AddWorktreeRequest) ProtoMessage() {}
 
-func (x *CreateWorktreeRequest) ProtoReflect() protoreflect.Message {
+func (x *AddWorktreeRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_internal_proto_mitra_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -383,53 +383,53 @@ func (x *CreateWorktreeRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateWorktreeRequest.ProtoReflect.Descriptor instead.
-func (*CreateWorktreeRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use AddWorktreeRequest.ProtoReflect.Descriptor instead.
+func (*AddWorktreeRequest) Descriptor() ([]byte, []int) {
 	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *CreateWorktreeRequest) GetRepoId() string {
+func (x *AddWorktreeRequest) GetRepoId() string {
 	if x != nil {
 		return x.RepoId
 	}
 	return ""
 }
 
-func (x *CreateWorktreeRequest) GetBranch() string {
+func (x *AddWorktreeRequest) GetBranch() string {
 	if x != nil {
 		return x.Branch
 	}
 	return ""
 }
 
-func (x *CreateWorktreeRequest) GetParentBranch() string {
+func (x *AddWorktreeRequest) GetParentBranch() string {
 	if x != nil && x.ParentBranch != nil {
 		return *x.ParentBranch
 	}
 	return ""
 }
 
-type CreateWorktreeResponse struct {
+type AddWorktreeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Worktree      *Worktree              `protobuf:"bytes,1,opt,name=worktree,proto3" json:"worktree,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateWorktreeResponse) Reset() {
-	*x = CreateWorktreeResponse{}
+func (x *AddWorktreeResponse) Reset() {
+	*x = AddWorktreeResponse{}
 	mi := &file_internal_proto_mitra_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateWorktreeResponse) String() string {
+func (x *AddWorktreeResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateWorktreeResponse) ProtoMessage() {}
+func (*AddWorktreeResponse) ProtoMessage() {}
 
-func (x *CreateWorktreeResponse) ProtoReflect() protoreflect.Message {
+func (x *AddWorktreeResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_internal_proto_mitra_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -441,12 +441,12 @@ func (x *CreateWorktreeResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateWorktreeResponse.ProtoReflect.Descriptor instead.
-func (*CreateWorktreeResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use AddWorktreeResponse.ProtoReflect.Descriptor instead.
+func (*AddWorktreeResponse) Descriptor() ([]byte, []int) {
 	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *CreateWorktreeResponse) GetWorktree() *Worktree {
+func (x *AddWorktreeResponse) GetWorktree() *Worktree {
 	if x != nil {
 		return x.Worktree
 	}
@@ -566,22 +566,22 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x0eAddRepoRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\"2\n" +
 	"\x0fAddRepoResponse\x12\x1f\n" +
-	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"\x84\x01\n" +
-	"\x15CreateWorktreeRequest\x12\x17\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"\x81\x01\n" +
+	"\x12AddWorktreeRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x16\n" +
 	"\x06branch\x18\x02 \x01(\tR\x06branch\x12(\n" +
 	"\rparent_branch\x18\x03 \x01(\tH\x00R\fparentBranch\x88\x01\x01B\x10\n" +
-	"\x0e_parent_branch\"E\n" +
-	"\x16CreateWorktreeResponse\x12+\n" +
+	"\x0e_parent_branch\"B\n" +
+	"\x13AddWorktreeResponse\x12+\n" +
 	"\bworktree\x18\x01 \x01(\v2\x0f.proto.WorktreeR\bworktree\"/\n" +
 	"\x14ListWorktreesRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"F\n" +
 	"\x15ListWorktreesResponse\x12-\n" +
-	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees2\xa3\x02\n" +
+	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees2\x9a\x02\n" +
 	"\fMitraService\x12>\n" +
 	"\tListRepos\x12\x17.proto.ListReposRequest\x1a\x18.proto.ListReposResponse\x128\n" +
-	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponse\x12M\n" +
-	"\x0eCreateWorktree\x12\x1c.proto.CreateWorktreeRequest\x1a\x1d.proto.CreateWorktreeResponse\x12J\n" +
+	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponse\x12D\n" +
+	"\vAddWorktree\x12\x19.proto.AddWorktreeRequest\x1a\x1a.proto.AddWorktreeResponse\x12J\n" +
 	"\rListWorktrees\x12\x1b.proto.ListWorktreesRequest\x1a\x1c.proto.ListWorktreesResponseB\x16Z\x14mitra/internal/protob\x06proto3"
 
 var (
@@ -598,29 +598,29 @@ func file_internal_proto_mitra_proto_rawDescGZIP() []byte {
 
 var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_internal_proto_mitra_proto_goTypes = []any{
-	(*Repo)(nil),                   // 0: proto.Repo
-	(*Worktree)(nil),               // 1: proto.Worktree
-	(*ListReposRequest)(nil),       // 2: proto.ListReposRequest
-	(*ListReposResponse)(nil),      // 3: proto.ListReposResponse
-	(*AddRepoRequest)(nil),         // 4: proto.AddRepoRequest
-	(*AddRepoResponse)(nil),        // 5: proto.AddRepoResponse
-	(*CreateWorktreeRequest)(nil),  // 6: proto.CreateWorktreeRequest
-	(*CreateWorktreeResponse)(nil), // 7: proto.CreateWorktreeResponse
-	(*ListWorktreesRequest)(nil),   // 8: proto.ListWorktreesRequest
-	(*ListWorktreesResponse)(nil),  // 9: proto.ListWorktreesResponse
+	(*Repo)(nil),                  // 0: proto.Repo
+	(*Worktree)(nil),              // 1: proto.Worktree
+	(*ListReposRequest)(nil),      // 2: proto.ListReposRequest
+	(*ListReposResponse)(nil),     // 3: proto.ListReposResponse
+	(*AddRepoRequest)(nil),        // 4: proto.AddRepoRequest
+	(*AddRepoResponse)(nil),       // 5: proto.AddRepoResponse
+	(*AddWorktreeRequest)(nil),    // 6: proto.AddWorktreeRequest
+	(*AddWorktreeResponse)(nil),   // 7: proto.AddWorktreeResponse
+	(*ListWorktreesRequest)(nil),  // 8: proto.ListWorktreesRequest
+	(*ListWorktreesResponse)(nil), // 9: proto.ListWorktreesResponse
 }
 var file_internal_proto_mitra_proto_depIdxs = []int32{
 	0, // 0: proto.ListReposResponse.repos:type_name -> proto.Repo
 	0, // 1: proto.AddRepoResponse.repo:type_name -> proto.Repo
-	1, // 2: proto.CreateWorktreeResponse.worktree:type_name -> proto.Worktree
+	1, // 2: proto.AddWorktreeResponse.worktree:type_name -> proto.Worktree
 	1, // 3: proto.ListWorktreesResponse.worktrees:type_name -> proto.Worktree
 	2, // 4: proto.MitraService.ListRepos:input_type -> proto.ListReposRequest
 	4, // 5: proto.MitraService.AddRepo:input_type -> proto.AddRepoRequest
-	6, // 6: proto.MitraService.CreateWorktree:input_type -> proto.CreateWorktreeRequest
+	6, // 6: proto.MitraService.AddWorktree:input_type -> proto.AddWorktreeRequest
 	8, // 7: proto.MitraService.ListWorktrees:input_type -> proto.ListWorktreesRequest
 	3, // 8: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
 	5, // 9: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
-	7, // 10: proto.MitraService.CreateWorktree:output_type -> proto.CreateWorktreeResponse
+	7, // 10: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
 	9, // 11: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
 	8, // [8:12] is the sub-list for method output_type
 	4, // [4:8] is the sub-list for method input_type

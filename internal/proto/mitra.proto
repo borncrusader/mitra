@@ -24,7 +24,7 @@ message Worktree {
 service MitraService {
   rpc ListRepos(ListReposRequest) returns (ListReposResponse);
   rpc AddRepo(AddRepoRequest) returns (AddRepoResponse);
-  rpc CreateWorktree(CreateWorktreeRequest) returns (CreateWorktreeResponse);
+  rpc AddWorktree(AddWorktreeRequest) returns (AddWorktreeResponse);
   rpc ListWorktrees(ListWorktreesRequest) returns (ListWorktreesResponse);
 }
 
@@ -42,13 +42,13 @@ message AddRepoResponse {
   Repo repo = 1;
 }
 
-message CreateWorktreeRequest {
+message AddWorktreeRequest {
   string repo_id = 1;
   string branch = 2;
   optional string parent_branch = 3;
 }
 
-message CreateWorktreeResponse {
+message AddWorktreeResponse {
   Worktree worktree = 1;
 }
 

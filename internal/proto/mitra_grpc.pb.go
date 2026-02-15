@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MitraService_ListRepos_FullMethodName      = "/proto.MitraService/ListRepos"
-	MitraService_AddRepo_FullMethodName        = "/proto.MitraService/AddRepo"
-	MitraService_CreateWorktree_FullMethodName = "/proto.MitraService/CreateWorktree"
-	MitraService_ListWorktrees_FullMethodName  = "/proto.MitraService/ListWorktrees"
+	MitraService_ListRepos_FullMethodName     = "/proto.MitraService/ListRepos"
+	MitraService_AddRepo_FullMethodName       = "/proto.MitraService/AddRepo"
+	MitraService_AddWorktree_FullMethodName   = "/proto.MitraService/AddWorktree"
+	MitraService_ListWorktrees_FullMethodName = "/proto.MitraService/ListWorktrees"
 )
 
 // MitraServiceClient is the client API for MitraService service.
@@ -31,7 +31,7 @@ const (
 type MitraServiceClient interface {
 	ListRepos(ctx context.Context, in *ListReposRequest, opts ...grpc.CallOption) (*ListReposResponse, error)
 	AddRepo(ctx context.Context, in *AddRepoRequest, opts ...grpc.CallOption) (*AddRepoResponse, error)
-	CreateWorktree(ctx context.Context, in *CreateWorktreeRequest, opts ...grpc.CallOption) (*CreateWorktreeResponse, error)
+	AddWorktree(ctx context.Context, in *AddWorktreeRequest, opts ...grpc.CallOption) (*AddWorktreeResponse, error)
 	ListWorktrees(ctx context.Context, in *ListWorktreesRequest, opts ...grpc.CallOption) (*ListWorktreesResponse, error)
 }
 
@@ -63,10 +63,10 @@ func (c *mitraServiceClient) AddRepo(ctx context.Context, in *AddRepoRequest, op
 	return out, nil
 }
 
-func (c *mitraServiceClient) CreateWorktree(ctx context.Context, in *CreateWorktreeRequest, opts ...grpc.CallOption) (*CreateWorktreeResponse, error) {
+func (c *mitraServiceClient) AddWorktree(ctx context.Context, in *AddWorktreeRequest, opts ...grpc.CallOption) (*AddWorktreeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateWorktreeResponse)
-	err := c.cc.Invoke(ctx, MitraService_CreateWorktree_FullMethodName, in, out, cOpts...)
+	out := new(AddWorktreeResponse)
+	err := c.cc.Invoke(ctx, MitraService_AddWorktree_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (c *mitraServiceClient) ListWorktrees(ctx context.Context, in *ListWorktree
 type MitraServiceServer interface {
 	ListRepos(context.Context, *ListReposRequest) (*ListReposResponse, error)
 	AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error)
-	CreateWorktree(context.Context, *CreateWorktreeRequest) (*CreateWorktreeResponse, error)
+	AddWorktree(context.Context, *AddWorktreeRequest) (*AddWorktreeResponse, error)
 	ListWorktrees(context.Context, *ListWorktreesRequest) (*ListWorktreesResponse, error)
 	mustEmbedUnimplementedMitraServiceServer()
 }
@@ -107,8 +107,8 @@ func (UnimplementedMitraServiceServer) ListRepos(context.Context, *ListReposRequ
 func (UnimplementedMitraServiceServer) AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddRepo not implemented")
 }
-func (UnimplementedMitraServiceServer) CreateWorktree(context.Context, *CreateWorktreeRequest) (*CreateWorktreeResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateWorktree not implemented")
+func (UnimplementedMitraServiceServer) AddWorktree(context.Context, *AddWorktreeRequest) (*AddWorktreeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddWorktree not implemented")
 }
 func (UnimplementedMitraServiceServer) ListWorktrees(context.Context, *ListWorktreesRequest) (*ListWorktreesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListWorktrees not implemented")
@@ -170,20 +170,20 @@ func _MitraService_AddRepo_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MitraService_CreateWorktree_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateWorktreeRequest)
+func _MitraService_AddWorktree_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddWorktreeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MitraServiceServer).CreateWorktree(ctx, in)
+		return srv.(MitraServiceServer).AddWorktree(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MitraService_CreateWorktree_FullMethodName,
+		FullMethod: MitraService_AddWorktree_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MitraServiceServer).CreateWorktree(ctx, req.(*CreateWorktreeRequest))
+		return srv.(MitraServiceServer).AddWorktree(ctx, req.(*AddWorktreeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -222,8 +222,8 @@ var MitraService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MitraService_AddRepo_Handler,
 		},
 		{
-			MethodName: "CreateWorktree",
-			Handler:    _MitraService_CreateWorktree_Handler,
+			MethodName: "AddWorktree",
+			Handler:    _MitraService_AddWorktree_Handler,
 		},
 		{
 			MethodName: "ListWorktrees",

@@ -26,6 +26,18 @@ make test
 
 # Generate default config
 ./bin/mitra config generate
+
+# Add a repository
+./bin/mitra repo add https://github.com/owner/repo
+
+# List repositories
+./bin/mitra repo list
+
+# Create a worktree
+./bin/mitra worktree add <repo-id> <branch-name>
+
+# List worktrees
+./bin/mitra worktree list [repo-id]
 ```
 
 ## Configuration
@@ -45,6 +57,9 @@ make dev
 
 # Run tests
 make test
+
+# Generate zsh completion
+make completion
 
 # Clean build artifacts
 make clean

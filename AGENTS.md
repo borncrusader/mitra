@@ -16,10 +16,11 @@ Repos, Worktrees, Branches and Agents
 
 # Architecture
 - **Config**: Regular Go structs with TOML serialization
-- **Data Models**: Protobuf for gRPC services (Repo, etc.)
+- **Data Models**: Protobuf for gRPC services (MitraService with Repo and Worktree)
 - **Server**: Dual HTTP (port 9999) + gRPC (port 9998)
-- **Storage**: TOML files in `~/.mitra/` (config.toml, repo.toml)
+- **Storage**: TOML files in `~/.mitra/` (config.toml, repo.toml, worktree.toml)
 - **CLI**: Cobra commands that communicate with gRPC server
+- **In-Memory Cache**: Repos and worktrees cached for fast access
 
 # Make Targets
 - `make build` - Build the binary to `bin/mitra`
@@ -27,6 +28,7 @@ Repos, Worktrees, Branches and Agents
 - `make dev` - Run in development mode
 - `make test` - Run all tests
 - `make protogen` - Regenerate proto and gRPC code
+- `make completion` - Generate zsh completion file
 - `make clean` - Remove build artifacts
 - `make help` - Show available targets
 
@@ -39,13 +41,21 @@ Config file: `~/.mitra/config.toml`
 # Data Storage
 Location: `~/.mitra/`
 - `config.toml` - Application configuration
-- `repo.toml` - Repository list (lowercase fields)
+- `repo.toml` - Repository list
+- `worktree.toml` - Worktree list (linked to repos)
 
 # Repositories
 - Format: `host/owner/repo` (e.g., `github.com/owner/repo`)
 - Supports: GitHub, GitLab, Bitbucket, custom git hosts
-- URL formats: `https://host/owner/repo`, `host/owner/repo`
+- URL formats: `https://host/owner/repo`, `host/owner/repo`, `git@host:owner/repo`
 - CLI: `mitra repo add <url>`, `mitra repo list`
+
+# Worktrees
+- Automatically creates main/master worktree when repo is added
+- Create new worktrees with `mitra worktree add <repo-id> <branch>`
+- All worktrees stored in repo directory: `~/code/work/owner/repo/branch`
+- Only main worktree is monitored and synced automatically
+- CLI: `mitra worktree add <repo-id> <branch>`, `mitra worktree list [repo-id]`
 
 # Usage
 ```
@@ -60,6 +70,7 @@ Available Commands:
   help        Help about any command
   repo        Manage repositories
   serve       Start the server
+  worktree    Manage worktrees
 
 Flags:
   -h, --help   help for mitra
@@ -73,6 +84,8 @@ Use "mitra [command] --help" for more information about a command.
 - `mitra config generate` - Generate default config file
 - `mitra repo add <url>` - Add a repository
 - `mitra repo list` - List repos (TOML format)
+- `mitra worktree add <repo-id> <branch>` - Create a new worktree
+- `mitra worktree list [repo-id]` - List worktrees (TOML format)
 
 # Development
 - Proto regeneration: `make protogen` (includes gRPC code generation)

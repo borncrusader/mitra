@@ -1,4 +1,4 @@
-.PHONY: build run-server clean dev test protogen help
+.PHONY: build run-server clean dev test protogen completion help
 
 BINARY_NAME=mitra
 BUILD_DIR=bin
@@ -10,6 +10,7 @@ help:
 	@echo "  dev        - Run server in development mode"
 	@echo "  test       - Run tests"
 	@echo "  protogen   - Generate Go code from proto files"
+	@echo "  completion - Generate zsh completion file"
 	@echo "  clean      - Remove build artifacts"
 
 build:
@@ -29,6 +30,10 @@ protogen:
 	@protoc --go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
 		internal/proto/*.proto
+
+completion: build
+	@./$(BUILD_DIR)/$(BINARY_NAME) completion zsh > .zsh.completion
+	@echo "Zsh completion written to .zsh.completion"
 
 clean:
 	@rm -rf $(BUILD_DIR)

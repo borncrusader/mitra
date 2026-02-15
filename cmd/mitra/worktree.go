@@ -45,12 +45,12 @@ var worktreeAddCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		resp, err := client.CreateWorktree(ctx, &proto.CreateWorktreeRequest{
+		resp, err := client.AddWorktree(ctx, &proto.AddWorktreeRequest{
 			RepoId: repoID,
 			Branch: branch,
 		})
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to create worktree")
+			log.Fatal().Err(err).Msg("failed to add worktree")
 		}
 
 		fmt.Printf("Created worktree: %s at %s\n", resp.Worktree.Branch, resp.Worktree.Path)
