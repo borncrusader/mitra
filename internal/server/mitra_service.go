@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -12,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"mitra/internal/config"
+	"mitra/internal/git"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
 	"mitra/internal/util"
@@ -211,9 +211,8 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 		Str("path", worktreePath).
 		Msg("creating worktree")
 
-	cmd := exec.Command("git", "-C", mainWorktree.Path, "worktree", "add", "-b", branch, worktreePath, parentBranch)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("failed to create git worktree: %w, output: %s", err, string(output))
+	if err := git.CreateWorktree(mainWorktree.Path, branch, worktreePath, parentBranch); err != nil {
+		return nil, err
 	}
 
 	worktree := &proto.Worktree{

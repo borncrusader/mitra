@@ -77,3 +77,13 @@ func Pull(repoPath string) error {
 
 	return nil
 }
+
+func CreateWorktree(mainWorktreePath, branch, worktreePath, parentBranch string) error {
+	cmd := exec.Command("git", "-C", mainWorktreePath, "worktree", "add", "-b", branch, worktreePath, parentBranch)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to create git worktree: %w, output: %s", err, string(output))
+	}
+
+	return nil
+}
