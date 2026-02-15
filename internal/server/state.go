@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/rs/zerolog"
@@ -54,7 +53,7 @@ func (s *State) HydrateTmuxSessions() error {
 		Msg("hydrating tmux sessions")
 
 	for _, wt := range s.worktrees {
-		sessionName := strings.TrimPrefix(wt.Branch, s.cfg.Repo.BranchPrefix)
+		sessionName := wt.Id
 
 		exists, err := tmux.SessionExists(sessionName)
 		if err != nil {
@@ -67,6 +66,9 @@ func (s *State) HydrateTmuxSessions() error {
 
 		if exists {
 			s.sessions[sessionName] = true
+			s.logger.Debug().
+				Str("session", sessionName).
+				Msg("tmux session already exists")
 			continue
 		}
 

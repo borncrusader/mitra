@@ -200,11 +200,10 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 		Msg("worktree created successfully")
 
 	// Create tmux session for the worktree
-	sessionName := branch
-	if err := s.state.CreateTmuxSession(sessionName, worktreePath); err != nil {
+	if err := s.state.CreateTmuxSession(worktreeID, worktreePath); err != nil {
 		s.logger.Warn().
 			Err(err).
-			Str("session", sessionName).
+			Str("session", worktreeID).
 			Str("path", worktreePath).
 			Msg("failed to create tmux session, continuing anyway")
 	}
@@ -280,11 +279,10 @@ func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.Dele
 		Msg("worktree deleted successfully")
 
 	// Kill tmux session if it exists
-	sessionName := strings.TrimPrefix(worktreeToDelete.Branch, s.cfg.Repo.BranchPrefix)
-	if err := s.state.KillTmuxSession(sessionName); err != nil {
+	if err := s.state.KillTmuxSession(worktreeToDelete.Id); err != nil {
 		s.logger.Warn().
 			Err(err).
-			Str("session", sessionName).
+			Str("session", worktreeToDelete.Id).
 			Msg("failed to kill tmux session, continuing anyway")
 	}
 
