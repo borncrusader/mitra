@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mattn/go-runewidth"
 	"google.golang.org/grpc"
@@ -36,6 +37,39 @@ type dataLoadedMsg struct {
 	err       error
 }
 
+type repoItem struct {
+	repo      *proto.Repo
+	worktrees []*proto.Worktree
+}
+
+func (i repoItem) Title() string {
+	return fmt.Sprintf("%s/%s", i.repo.Owner, i.repo.Repo)
+}
+
+func (i repoItem) Description() string {
+	if len(i.worktrees) == 0 {
+		return "No worktrees"
+	}
+
+	var branches []string
+	for _, wt := range i.worktrees {
+		if wt.IsMain {
+			branches = append(branches, fmt.Sprintf("★ %s", wt.Branch))
+		} else {
+			branches = append(branches, wt.Branch)
+		}
+	}
+
+	if len(branches) > 3 {
+		return fmt.Sprintf("%d worktrees: %s, ...", len(branches), strings.Join(branches[:3], ", "))
+	}
+	return fmt.Sprintf("%d worktrees: %s", len(branches), strings.Join(branches, ", "))
+}
+
+func (i repoItem) FilterValue() string {
+	return i.Title()
+}
+
 type DashboardModel struct {
 	width     int
 	height    int
@@ -44,6 +78,7 @@ type DashboardModel struct {
 	activeTab tabView
 	repos     []*proto.Repo
 	worktrees []*proto.Worktree
+	reposList list.Model
 	loading   bool
 	err       error
 }
@@ -96,18 +131,24 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		if m.state == stateDashboard {
+			// Reserve space for header and footer
+			listHeight := msg.Height - 8
+			listWidth := msg.Width - 4
+			m.reposList.SetSize(listWidth, listHeight)
+		}
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			m.quitting = true
 			return m, tea.Quit
-		case "tab", "right":
+		case "tab":
 			if m.state == stateDashboard {
 				m.activeTab = (m.activeTab + 1) % 2
 			}
 			return m, nil
-		case "shift+tab", "left":
+		case "shift+tab":
 			if m.state == stateDashboard {
 				m.activeTab = (m.activeTab - 1 + 2) % 2
 			}
@@ -118,6 +159,13 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.loading = true
 				return m, loadData
 			}
+
+			// Delegate to list if in Repos tab
+			if m.state == stateDashboard && m.activeTab == tabRepos && len(m.repos) > 0 {
+				var cmd tea.Cmd
+				m.reposList, cmd = m.reposList.Update(msg)
+				return m, cmd
+			}
 		}
 	case dataLoadedMsg:
 		m.loading = false
@@ -126,6 +174,20 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.repos = msg.repos
 			m.worktrees = msg.worktrees
+
+			// Build list items
+			items := make([]list.Item, len(m.repos))
+			for i, repo := range m.repos {
+				items[i] = repoItem{
+					repo:      repo,
+					worktrees: m.getWorktreesForRepo(repo.Id),
+				}
+			}
+
+			m.reposList = list.New(items, list.NewDefaultDelegate(), 0, 0)
+			m.reposList.Title = "Repositories"
+			m.reposList.SetShowStatusBar(false)
+			m.reposList.SetFilteringEnabled(true)
 		}
 		return m, nil
 	}
@@ -212,7 +274,11 @@ func (m DashboardModel) renderDashboard() string {
 	}
 
 	lines = append(lines, "")
-	lines = append(lines, "Tab/→ next | Shift+Tab/← prev | q quit")
+	if m.activeTab == tabRepos && len(m.repos) > 0 {
+		lines = append(lines, "↑/↓ navigate | / filter | Tab switch tab | q quit")
+	} else {
+		lines = append(lines, "Tab switch tab | q quit")
+	}
 
 	// Add left padding
 	paddedLines := make([]string, len(lines))
@@ -249,32 +315,9 @@ func (m DashboardModel) renderReposTab() []string {
 		return lines
 	}
 
-	for i, repo := range m.repos {
-		lines = append(lines, fmt.Sprintf("%d. %s/%s", i+1, repo.Owner, repo.Repo))
-
-		repoWorktrees := m.getWorktreesForRepo(repo.Id)
-		if len(repoWorktrees) == 0 {
-			lines = append(lines, "   └─ No worktrees")
-		} else {
-			for j, wt := range repoWorktrees {
-				isLast := j == len(repoWorktrees)-1
-				prefix := "├─"
-				if isLast {
-					prefix = "└─"
-				}
-
-				indicator := ""
-				if wt.IsMain {
-					indicator = " ★"
-				}
-
-				lines = append(lines, fmt.Sprintf("   %s %s%s", prefix, wt.Branch, indicator))
-			}
-		}
-		lines = append(lines, "")
-	}
-
-	return lines
+	// Return the list view as lines
+	listView := m.reposList.View()
+	return strings.Split(listView, "\n")
 }
 
 func (m DashboardModel) getWorktreesForRepo(repoID string) []*proto.Worktree {
