@@ -1,6 +1,7 @@
 package server
 
 import (
+	"mitra/internal/agents"
 	"mitra/internal/tmux"
 )
 
@@ -44,6 +45,19 @@ func (cmd *createSessionCmd) Execute(sm *SessionManager) error {
 			Msg("tmux session already exists")
 		cmd.responseChan <- nil
 		return nil
+	}
+
+	if sm.cfg.Agents.Claude.Enabled && sm.cfg.Agents.Claude.TrustByDefault {
+		if err := agents.EnableTrustForDir(cmd.path); err != nil {
+			sm.logger.Warn().
+				Err(err).
+				Str("path", cmd.path).
+				Msg("failed to enable Claude trust for directory, continuing anyway")
+		} else {
+			sm.logger.Info().
+				Str("path", cmd.path).
+				Msg("enabled Claude trust for directory")
+		}
 	}
 
 	if err := tmux.CreateSession(cmd.worktreeID, cmd.path, sm.cfg.Session.Panes); err != nil {
@@ -142,6 +156,19 @@ func (cmd *addSessionsCmd) Execute(sm *SessionManager) error {
 				Str("session", wt.Id).
 				Msg("tmux session already exists")
 			continue
+		}
+
+		if sm.cfg.Agents.Claude.Enabled && sm.cfg.Agents.Claude.TrustByDefault {
+			if err := agents.EnableTrustForDir(wt.Path); err != nil {
+				sm.logger.Warn().
+					Err(err).
+					Str("path", wt.Path).
+					Msg("failed to enable Claude trust for directory, continuing anyway")
+			} else {
+				sm.logger.Debug().
+					Str("path", wt.Path).
+					Msg("enabled Claude trust for directory")
+			}
 		}
 
 		if err := tmux.CreateSession(wt.Id, wt.Path, sm.cfg.Session.Panes); err != nil {
