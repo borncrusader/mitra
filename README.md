@@ -81,7 +81,7 @@ codex = false   # Default: false
 
 [agents.claude]
 enabled = true            # Default: true
-trust_by_default = true   # Default: true
+trust_by_default = false  # Default: false
 ```
 
 ### Session Configuration
@@ -94,7 +94,7 @@ trust_by_default = true   # Default: true
 ### Agents Configuration
 - **claude**: Claude AI coding agent configuration
   - **enabled**: Enable Claude agent (default: `true`)
-  - **trust_by_default**: Trust Claude operations by default (default: `true`)
+  - **trust_by_default**: Trust Claude operations by default (default: `false`)
 - **codex**: Enable Codex AI coding agent (default: `false`)
 
 ## Development

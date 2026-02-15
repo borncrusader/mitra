@@ -74,7 +74,7 @@ func Default() *Config {
 		Agents: AgentsConfig{
 			Claude: ClaudeAgentConfig{
 				Enabled:        true,
-				TrustByDefault: true,
+				TrustByDefault: false,
 			},
 			Codex: false,
 		},

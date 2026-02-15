@@ -50,7 +50,7 @@ Config file: `~/.mitra/config.toml`
 - Agents: Configure AI coding agents
   - Claude: Claude agent configuration
     - Enabled: `true` (default) - Enable Claude agent
-    - Trust by default: `true` (default) - Trust Claude operations by default
+    - Trust by default: `false` (default) - Trust Claude operations by default
   - Codex: `false` (default) - Enable Codex agent
 
 # Data Storage
