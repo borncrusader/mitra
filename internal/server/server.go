@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"mitra/internal/config"
+	"mitra/internal/migration"
 	"mitra/internal/proto"
 	"mitra/internal/util"
 )
@@ -27,6 +28,10 @@ func helloHandler(w http.ResponseWriter, _ *http.Request) {
 
 func Start(cfg *config.Config) error {
 	logger := util.NewLogger(os.Stdout)
+
+	if err := migration.Run(logger); err != nil {
+		return fmt.Errorf("migration failed: %w", err)
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

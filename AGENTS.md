@@ -9,6 +9,7 @@ Repos, Worktrees, Branches and Agents
 # Project Structure
 - `cmd/mitra/` - Main application entry point with CLI commands
 - `internal/config/` - Configuration management (Go structs, not proto)
+- `internal/migration/` - Startup migrations and validations
 - `internal/proto/` - Protobuf definitions for gRPC services and data models
 - `internal/server/` - HTTP + gRPC server implementation
 - `internal/storage/` - Data persistence layer with TOML storage
@@ -21,6 +22,7 @@ Repos, Worktrees, Branches and Agents
 - **Storage**: TOML files in `~/.mitra/` (config.toml, repo.toml, worktree.toml)
 - **CLI**: Cobra commands that communicate with gRPC server
 - **In-Memory Cache**: Repos and worktrees cached for fast access
+- **Migrations**: Automatic on startup - creates missing files, ensures main worktrees exist
 
 # Make Targets
 - `make build` - Build the binary to `bin/mitra`
