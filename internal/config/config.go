@@ -19,8 +19,8 @@ type ServerConfig struct {
 }
 
 type RepoConfig struct {
-	Dir                  string `toml:"dir"`
-	SyncIntervalSecs     int    `toml:"sync_interval_secs"`
+	Dir              string `toml:"dir"`
+	SyncIntervalSecs int    `toml:"sync_interval_secs"`
 }
 
 func Default() *Config {

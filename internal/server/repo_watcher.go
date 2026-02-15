@@ -7,19 +7,20 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+
 	"mitra/internal/config"
 	"mitra/internal/git"
 )
 
 type RepoWatcher struct {
-	logger  zerolog.Logger
-	cfg     *config.Config
-	repoURL string
-	repoID  string
-	owner   string
+	logger   zerolog.Logger
+	cfg      *config.Config
+	repoURL  string
+	repoID   string
+	owner    string
 	repoName string
-	repoDir string
-	service *MitraServiceServer
+	repoDir  string
+	service  *MitraServiceServer
 }
 
 func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, owner, repoName, repoDir string, service *MitraServiceServer) *RepoWatcher {
