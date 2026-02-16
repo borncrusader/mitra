@@ -21,12 +21,20 @@ message Worktree {
   optional string parent_branch = 6;
 }
 
+message Session {
+  string id = 1;
+  string worktree_id = 2;
+  string name = 3;
+}
+
 service MitraService {
   rpc ListRepos(ListReposRequest) returns (ListReposResponse);
   rpc AddRepo(AddRepoRequest) returns (AddRepoResponse);
   rpc AddWorktree(AddWorktreeRequest) returns (AddWorktreeResponse);
   rpc ListWorktrees(ListWorktreesRequest) returns (ListWorktreesResponse);
   rpc DeleteWorktree(DeleteWorktreeRequest) returns (DeleteWorktreeResponse);
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
 }
 
 message ListReposRequest {}
@@ -67,4 +75,18 @@ message DeleteWorktreeRequest {
 
 message DeleteWorktreeResponse {
   bool success = 1;
+}
+
+message ListSessionsRequest {}
+
+message ListSessionsResponse {
+  repeated Session sessions = 1;
+}
+
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message GetSessionResponse {
+  Session session = 1;
 }

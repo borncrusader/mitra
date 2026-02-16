@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 // PaneConfig represents a pane configuration
@@ -152,6 +153,12 @@ func AttachSession(name string) error {
 		return fmt.Errorf("failed to attach to tmux session: %w", err)
 	}
 	return nil
+}
+
+// AttachSessionExec attaches to a tmux session by replacing the current process
+// This is useful for CLI commands where you want to "become" the tmux attach process
+func AttachSessionExec(name string) error {
+	return syscall.Exec("/usr/bin/tmux", []string{"tmux", "attach-session", "-t", name}, syscall.Environ())
 }
 
 // SplitWindow splits a tmux window horizontally

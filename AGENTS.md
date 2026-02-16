@@ -95,6 +95,7 @@ Available Commands:
   help        Help about any command
   repo        Manage repositories
   serve       Start the server
+  session     Manage sessions
   worktree    Manage worktrees
 
 Flags:
@@ -119,6 +120,8 @@ Use "mitra [command] --help" for more information about a command.
 - `mitra worktree add [repo-id] [branch[:parent-branch]]` - Create a new worktree (interactive TUI if no args)
 - `mitra worktree list [repo-id]` - List worktrees (TOML format)
 - `mitra worktree delete [worktree-id]` - Delete a worktree (interactive TUI if no args)
+- `mitra session list` - List all tmux sessions (TOML format)
+- `mitra session attach [session-id]` - Attach to a tmux session (interactive TUI if no args)
 
 # Development
 - Proto regeneration: `make protogen` (includes gRPC code generation)

@@ -12,6 +12,7 @@ import (
 
 	"mitra/internal/config"
 	"mitra/internal/proto"
+	"mitra/internal/tmux"
 	"mitra/internal/util"
 )
 
@@ -267,6 +268,61 @@ func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.Dele
 
 	return &proto.DeleteWorktreeResponse{
 		Success: true,
+	}, nil
+}
+
+func (s *MitraServiceServer) ListSessions(ctx context.Context, req *proto.ListSessionsRequest) (*proto.ListSessionsResponse, error) {
+	sessionNames, err := tmux.ListSessions()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tmux sessions: %w", err)
+	}
+
+	var sessions []*proto.Session
+	for _, name := range sessionNames {
+		worktree, _ := s.state.FindWorktreeByID(name)
+
+		session := &proto.Session{
+			Id:         name,
+			WorktreeId: name,
+			Name:       name,
+		}
+
+		if worktree != nil {
+			session.Name = fmt.Sprintf("%s (%s)", worktree.Branch, worktree.Path)
+		}
+
+		sessions = append(sessions, session)
+	}
+
+	return &proto.ListSessionsResponse{
+		Sessions: sessions,
+	}, nil
+}
+
+func (s *MitraServiceServer) GetSession(ctx context.Context, req *proto.GetSessionRequest) (*proto.GetSessionResponse, error) {
+	exists, err := tmux.SessionExists(req.SessionId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check session: %w", err)
+	}
+
+	if !exists {
+		return nil, fmt.Errorf("session not found: %s", req.SessionId)
+	}
+
+	worktree, _ := s.state.FindWorktreeByID(req.SessionId)
+
+	session := &proto.Session{
+		Id:         req.SessionId,
+		WorktreeId: req.SessionId,
+		Name:       req.SessionId,
+	}
+
+	if worktree != nil {
+		session.Name = fmt.Sprintf("%s (%s)", worktree.Branch, worktree.Path)
+	}
+
+	return &proto.GetSessionResponse{
+		Session: session,
 	}, nil
 }
 

@@ -24,6 +24,8 @@ const (
 	MitraService_AddWorktree_FullMethodName    = "/proto.MitraService/AddWorktree"
 	MitraService_ListWorktrees_FullMethodName  = "/proto.MitraService/ListWorktrees"
 	MitraService_DeleteWorktree_FullMethodName = "/proto.MitraService/DeleteWorktree"
+	MitraService_ListSessions_FullMethodName   = "/proto.MitraService/ListSessions"
+	MitraService_GetSession_FullMethodName     = "/proto.MitraService/GetSession"
 )
 
 // MitraServiceClient is the client API for MitraService service.
@@ -35,6 +37,8 @@ type MitraServiceClient interface {
 	AddWorktree(ctx context.Context, in *AddWorktreeRequest, opts ...grpc.CallOption) (*AddWorktreeResponse, error)
 	ListWorktrees(ctx context.Context, in *ListWorktreesRequest, opts ...grpc.CallOption) (*ListWorktreesResponse, error)
 	DeleteWorktree(ctx context.Context, in *DeleteWorktreeRequest, opts ...grpc.CallOption) (*DeleteWorktreeResponse, error)
+	ListSessions(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error)
+	GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GetSessionResponse, error)
 }
 
 type mitraServiceClient struct {
@@ -95,6 +99,26 @@ func (c *mitraServiceClient) DeleteWorktree(ctx context.Context, in *DeleteWorkt
 	return out, nil
 }
 
+func (c *mitraServiceClient) ListSessions(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSessionsResponse)
+	err := c.cc.Invoke(ctx, MitraService_ListSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mitraServiceClient) GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GetSessionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSessionResponse)
+	err := c.cc.Invoke(ctx, MitraService_GetSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MitraServiceServer is the server API for MitraService service.
 // All implementations must embed UnimplementedMitraServiceServer
 // for forward compatibility.
@@ -104,6 +128,8 @@ type MitraServiceServer interface {
 	AddWorktree(context.Context, *AddWorktreeRequest) (*AddWorktreeResponse, error)
 	ListWorktrees(context.Context, *ListWorktreesRequest) (*ListWorktreesResponse, error)
 	DeleteWorktree(context.Context, *DeleteWorktreeRequest) (*DeleteWorktreeResponse, error)
+	ListSessions(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error)
+	GetSession(context.Context, *GetSessionRequest) (*GetSessionResponse, error)
 	mustEmbedUnimplementedMitraServiceServer()
 }
 
@@ -128,6 +154,12 @@ func (UnimplementedMitraServiceServer) ListWorktrees(context.Context, *ListWorkt
 }
 func (UnimplementedMitraServiceServer) DeleteWorktree(context.Context, *DeleteWorktreeRequest) (*DeleteWorktreeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteWorktree not implemented")
+}
+func (UnimplementedMitraServiceServer) ListSessions(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSessions not implemented")
+}
+func (UnimplementedMitraServiceServer) GetSession(context.Context, *GetSessionRequest) (*GetSessionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSession not implemented")
 }
 func (UnimplementedMitraServiceServer) mustEmbedUnimplementedMitraServiceServer() {}
 func (UnimplementedMitraServiceServer) testEmbeddedByValue()                      {}
@@ -240,6 +272,42 @@ func _MitraService_DeleteWorktree_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MitraService_ListSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MitraServiceServer).ListSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MitraService_ListSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MitraServiceServer).ListSessions(ctx, req.(*ListSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MitraService_GetSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MitraServiceServer).GetSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MitraService_GetSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MitraServiceServer).GetSession(ctx, req.(*GetSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MitraService_ServiceDesc is the grpc.ServiceDesc for MitraService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +334,14 @@ var MitraService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteWorktree",
 			Handler:    _MitraService_DeleteWorktree_Handler,
+		},
+		{
+			MethodName: "ListSessions",
+			Handler:    _MitraService_ListSessions_Handler,
+		},
+		{
+			MethodName: "GetSession",
+			Handler:    _MitraService_GetSession_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

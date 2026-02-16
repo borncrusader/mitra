@@ -53,6 +53,15 @@ make test
 # Examples:
 #   mitra worktree delete                    # interactive worktree selection
 #   mitra worktree delete worktree-id-123    # delete specific worktree
+
+# List sessions
+./bin/mitra session list
+
+# Attach to a session (interactive TUI if no args)
+./bin/mitra session attach [session-id]
+# Examples:
+#   mitra session attach                     # interactive session selection
+#   mitra session attach session-id-123      # attach to specific session
 ```
 
 ## Configuration
