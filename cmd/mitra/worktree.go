@@ -10,7 +10,7 @@ import (
 
 	"mitra/internal/proto"
 	"mitra/internal/storage"
-	"mitra/internal/tui"
+	"mitra/internal/tui/selectors"
 )
 
 var worktreeCmd = &cobra.Command{
@@ -41,7 +41,7 @@ var worktreeAddCmd = &cobra.Command{
 				log.Fatal().Err(err).Msg("failed to list repos")
 			}
 
-			selectedRepo, err := tui.SelectRepo(listResp.Repos)
+			selectedRepo, err := selectors.SelectRepo(listResp.Repos)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select repo")
 			}
@@ -158,7 +158,7 @@ var worktreeDeleteCmd = &cobra.Command{
 				log.Fatal().Err(err).Msg("failed to list worktrees")
 			}
 
-			selectedWorktree, err := tui.SelectWorktree(listResp.Worktrees)
+			selectedWorktree, err := selectors.SelectWorktree(listResp.Worktrees)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select worktree")
 			}

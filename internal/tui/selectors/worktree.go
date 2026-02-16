@@ -1,4 +1,4 @@
-package tui
+package selectors
 
 import (
 	"fmt"

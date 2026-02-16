@@ -9,7 +9,7 @@ import (
 
 	"mitra/internal/proto"
 	"mitra/internal/tmux"
-	"mitra/internal/tui"
+	"mitra/internal/tui/selectors"
 )
 
 var sessionCmd = &cobra.Command{
@@ -86,7 +86,7 @@ var sessionAttachCmd = &cobra.Command{
 				log.Fatal().Err(err).Msg("failed to list sessions")
 			}
 
-			selectedSession, err := tui.SelectSession(listResp.Sessions)
+			selectedSession, err := selectors.SelectSession(listResp.Sessions)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select session")
 			}
