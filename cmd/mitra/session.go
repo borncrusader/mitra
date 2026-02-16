@@ -19,13 +19,15 @@ import (
 )
 
 var sessionCmd = &cobra.Command{
-	Use:   "session",
-	Short: "Manage sessions",
+	Use:     "session",
+	Aliases: []string{"s", "sess"},
+	Short:   "Manage sessions",
 }
 
 var sessionListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List sessions",
+	Use:     "list",
+	Aliases: []string{"l", "ls"},
+	Short:   "List sessions",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
@@ -80,9 +82,10 @@ var sessionListCmd = &cobra.Command{
 }
 
 var sessionAttachCmd = &cobra.Command{
-	Use:   "attach [session-id]",
-	Short: "Attach to a session",
-	Args:  cobra.RangeArgs(0, 1),
+	Use:     "attach [session-id]",
+	Aliases: []string{"a", "at"},
+	Short:   "Attach to a session",
+	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {

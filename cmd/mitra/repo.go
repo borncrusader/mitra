@@ -18,14 +18,16 @@ import (
 )
 
 var repoCmd = &cobra.Command{
-	Use:   "repo",
-	Short: "Manage repositories",
+	Use:     "repo",
+	Aliases: []string{"r"},
+	Short:   "Manage repositories",
 }
 
 var repoAddCmd = &cobra.Command{
-	Use:   "add <git-url>",
-	Short: "Add a repository",
-	Args:  cobra.ExactArgs(1),
+	Use:     "add <git-url>",
+	Aliases: []string{"a"},
+	Short:   "Add a repository",
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		gitURL := args[0]
 
@@ -60,8 +62,9 @@ var repoAddCmd = &cobra.Command{
 }
 
 var repoListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List repositories",
+	Use:     "list",
+	Aliases: []string{"l", "ls"},
+	Short:   "List repositories",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {

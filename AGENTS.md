@@ -113,15 +113,15 @@ Use "mitra [command] --help" for more information about a command.
 # Commands
 - `mitra` - Launch TUI dashboard (default command)
 - `mitra serve` - Start HTTP + gRPC servers
-- `mitra config show` - Show current config
-- `mitra config generate` - Generate default config file
-- `mitra repo add <url>` - Add a repository
-- `mitra repo list` - List repos (TOML format)
-- `mitra worktree add [repo-id] [branch[:parent-branch]]` - Create a new worktree (interactive TUI if no args)
-- `mitra worktree list [repo-id]` - List worktrees (TOML format)
-- `mitra worktree delete [worktree-id]` - Delete a worktree (interactive TUI if no args)
-- `mitra session list` - List all tmux sessions (TOML format)
-- `mitra session attach [session-id]` - Attach to a tmux session (interactive TUI if no args)
+- `mitra config show` (aliases: `c s`) - Show current config
+- `mitra config generate` (aliases: `c g`, `c gen`) - Generate default config file
+- `mitra repo add <url>` (aliases: `r a`) - Add a repository
+- `mitra repo list` (aliases: `r l`, `r ls`) - List repos (TOML format)
+- `mitra worktree add [repo-id] [branch[:parent-branch]]` (aliases: `w a`, `wt a`) - Create a new worktree (interactive TUI if no args)
+- `mitra worktree list [repo-id]` (aliases: `w l`, `w ls`) - List worktrees (TOML format)
+- `mitra worktree delete [worktree-id]` (aliases: `w d`, `w del`, `w rm`) - Delete a worktree (interactive TUI if no args)
+- `mitra session list` (aliases: `s l`, `s ls`, `sess l`) - List all tmux sessions (TOML format)
+- `mitra session attach [session-id]` (aliases: `s a`, `s at`, `sess a`) - Attach to a tmux session (interactive TUI if no args)
 
 # Development
 - Proto regeneration: `make protogen` (includes gRPC code generation)

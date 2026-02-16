@@ -20,14 +20,16 @@ import (
 )
 
 var worktreeCmd = &cobra.Command{
-	Use:   "worktree",
-	Short: "Manage worktrees",
+	Use:     "worktree",
+	Aliases: []string{"w", "wt"},
+	Short:   "Manage worktrees",
 }
 
 var worktreeAddCmd = &cobra.Command{
-	Use:   "add [repo-id] [branch[:parent-branch]]",
-	Short: "Add a new worktree",
-	Args:  cobra.RangeArgs(0, 2),
+	Use:     "add [repo-id] [branch[:parent-branch]]",
+	Aliases: []string{"a"},
+	Short:   "Add a new worktree",
+	Args:    cobra.RangeArgs(0, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
@@ -103,9 +105,10 @@ var worktreeAddCmd = &cobra.Command{
 }
 
 var worktreeListCmd = &cobra.Command{
-	Use:   "list [repo-id]",
-	Short: "List worktrees",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "list [repo-id]",
+	Aliases: []string{"l", "ls"},
+	Short:   "List worktrees",
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
@@ -164,9 +167,10 @@ var worktreeListCmd = &cobra.Command{
 }
 
 var worktreeDeleteCmd = &cobra.Command{
-	Use:   "delete [worktree-id]",
-	Short: "Delete a worktree",
-	Args:  cobra.RangeArgs(0, 1),
+	Use:     "delete [worktree-id]",
+	Aliases: []string{"d", "del", "rm"},
+	Short:   "Delete a worktree",
+	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {

@@ -17,6 +17,8 @@ make test
 
 ## Commands
 
+All commands support short aliases for faster typing.
+
 ```bash
 # Launch TUI dashboard (default)
 ./bin/mitra
@@ -24,44 +26,53 @@ make test
 # Start server
 ./bin/mitra serve
 
-# Show config
+# Show config (aliases: c s)
 ./bin/mitra config show
+./bin/mitra c s
 
-# Generate default config
+# Generate default config (aliases: c g, c gen)
 ./bin/mitra config generate
+./bin/mitra c g
 
-# Add a repository
+# Add a repository (aliases: r a)
 ./bin/mitra repo add https://github.com/owner/repo
+./bin/mitra r a https://github.com/owner/repo
 
-# List repositories
+# List repositories (aliases: r l, r ls)
 ./bin/mitra repo list
+./bin/mitra r l
 
-# Create a worktree (interactive TUI if no args)
+# Create a worktree (interactive TUI if no args) (aliases: w a, wt a)
 ./bin/mitra worktree add [repo-id] [branch[:parent-branch]]
+./bin/mitra w a [repo-id] [branch[:parent-branch]]
 # Examples:
-#   mitra worktree add                       # interactive repo selection
-#   mitra worktree add repo-123              # uses generated ID, main as parent
-#   mitra worktree add repo-123 feature      # 'feature' from main
-#   mitra worktree add repo-123 feature:dev  # 'feature' from dev
-#   mitra worktree add repo-123 :dev         # generated ID from dev
+#   mitra w a                                # interactive repo selection
+#   mitra w a repo-123                       # uses generated ID, main as parent
+#   mitra w a repo-123 feature               # 'feature' from main
+#   mitra w a repo-123 feature:dev           # 'feature' from dev
+#   mitra w a repo-123 :dev                  # generated ID from dev
 
-# List worktrees
+# List worktrees (aliases: w l, w ls)
 ./bin/mitra worktree list [repo-id]
+./bin/mitra w l [repo-id]
 
-# Delete a worktree (interactive TUI if no args)
+# Delete a worktree (interactive TUI if no args) (aliases: w d, w del, w rm)
 ./bin/mitra worktree delete [worktree-id]
+./bin/mitra w d [worktree-id]
 # Examples:
-#   mitra worktree delete                    # interactive worktree selection
-#   mitra worktree delete worktree-id-123    # delete specific worktree
+#   mitra w d                                # interactive worktree selection
+#   mitra w d worktree-id-123                # delete specific worktree
 
-# List sessions
+# List sessions (aliases: s l, s ls, sess l)
 ./bin/mitra session list
+./bin/mitra s l
 
-# Attach to a session (interactive TUI if no args)
+# Attach to a session (interactive TUI if no args) (aliases: s a, s at, sess a)
 ./bin/mitra session attach [session-id]
+./bin/mitra s a [session-id]
 # Examples:
-#   mitra session attach                     # interactive session selection
-#   mitra session attach session-id-123      # attach to specific session
+#   mitra s a                                # interactive session selection
+#   mitra s a session-id-123                 # attach to specific session
 ```
 
 ## Configuration

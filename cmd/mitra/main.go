@@ -37,13 +37,15 @@ var serveCmd = &cobra.Command{
 }
 
 var configCmd = &cobra.Command{
-	Use:   "config",
-	Short: "Manage configuration",
+	Use:     "config",
+	Aliases: []string{"c", "cfg"},
+	Short:   "Manage configuration",
 }
 
 var configShowCmd = &cobra.Command{
-	Use:   "show",
-	Short: "Show current config",
+	Use:     "show",
+	Aliases: []string{"s"},
+	Short:   "Show current config",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
@@ -56,8 +58,9 @@ var configShowCmd = &cobra.Command{
 }
 
 var configGenerateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generate default config file",
+	Use:     "generate",
+	Aliases: []string{"g", "gen"},
+	Short:   "Generate default config file",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := config.Generate(); err != nil {
 			log.Fatal().Err(err).Msg("failed to generate config")
