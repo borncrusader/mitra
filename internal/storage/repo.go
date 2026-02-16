@@ -11,11 +11,12 @@ import (
 )
 
 type Repo struct {
-	ID    string `toml:"id"`
-	URL   string `toml:"url"`
-	Host  string `toml:"host"`
-	Owner string `toml:"owner"`
-	Repo  string `toml:"repo"`
+	ID         string `toml:"id"`
+	URL        string `toml:"url"`
+	Host       string `toml:"host"`
+	Owner      string `toml:"owner"`
+	Repo       string `toml:"repo"`
+	MainBranch string `toml:"main_branch"`
 }
 
 type RepoStorage struct {
@@ -24,21 +25,23 @@ type RepoStorage struct {
 
 func toStorageRepo(pr *proto.Repo) *Repo {
 	return &Repo{
-		ID:    pr.Id,
-		URL:   pr.Url,
-		Host:  pr.Host,
-		Owner: pr.Owner,
-		Repo:  pr.Repo,
+		ID:         pr.Id,
+		URL:        pr.Url,
+		Host:       pr.Host,
+		Owner:      pr.Owner,
+		Repo:       pr.Repo,
+		MainBranch: pr.MainBranch,
 	}
 }
 
 func toProtoRepo(sr *Repo) *proto.Repo {
 	return &proto.Repo{
-		Id:    sr.ID,
-		Url:   sr.URL,
-		Host:  sr.Host,
-		Owner: sr.Owner,
-		Repo:  sr.Repo,
+		Id:         sr.ID,
+		Url:        sr.URL,
+		Host:       sr.Host,
+		Owner:      sr.Owner,
+		Repo:       sr.Repo,
+		MainBranch: sr.MainBranch,
 	}
 }
 

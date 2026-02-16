@@ -24,12 +24,13 @@ type RepoWatcher struct {
 	owner       string
 	repoName    string
 	repoDir     string
+	mainBranch  string
 	service     *MitraServiceServer
 	commandChan chan repoCommand
 	cloneReady  bool
 }
 
-func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, owner, repoName, repoDir string, service *MitraServiceServer) *RepoWatcher {
+func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, owner, repoName, repoDir string, mainBranch string, service *MitraServiceServer) *RepoWatcher {
 	return &RepoWatcher{
 		logger: logger.With().
 			Str("component", "repo-watcher").
@@ -42,6 +43,7 @@ func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, 
 		owner:       owner,
 		repoName:    repoName,
 		repoDir:     repoDir,
+		mainBranch:  mainBranch,
 		service:     service,
 		commandChan: make(chan repoCommand, 10),
 		cloneReady:  false,
@@ -49,20 +51,7 @@ func NewRepoWatcher(logger zerolog.Logger, cfg *config.Config, repoURL, repoID, 
 }
 
 func (w *RepoWatcher) Watch(ctx context.Context) {
-	defaultBranch, err := git.GetDefaultBranch(w.repoURL)
-	if err != nil {
-		w.logger.Warn().
-			Err(err).
-			Str("url", w.repoURL).
-			Msg("failed to detect default branch, using 'main'")
-		defaultBranch = "main"
-	}
-
-	w.logger.Info().
-		Str("branch", defaultBranch).
-		Msg("default branch detected")
-
-	cloneDir := filepath.Join(w.repoDir, defaultBranch)
+	cloneDir := filepath.Join(w.repoDir, w.mainBranch)
 
 	if _, err := os.Stat(cloneDir); !os.IsNotExist(err) {
 		w.logger.Info().
@@ -73,10 +62,10 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 		w.logger.Info().
 			Str("url", w.repoURL).
 			Str("path", cloneDir).
-			Str("branch", defaultBranch).
+			Str("branch", w.mainBranch).
 			Msg("starting clone")
 
-		if err := git.Clone(w.repoURL, cloneDir, defaultBranch); err != nil {
+		if err := git.Clone(w.repoURL, cloneDir, w.mainBranch); err != nil {
 			w.logger.Error().
 				Err(err).
 				Msg("failed to clone repository")
@@ -87,7 +76,7 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 			Str("path", cloneDir).
 			Msg("clone completed successfully")
 
-		if err := w.createWorktreeEntry(defaultBranch, cloneDir); err != nil {
+		if err := w.createWorktreeEntry(w.mainBranch, cloneDir); err != nil {
 			w.logger.Error().
 				Err(err).
 				Msg("failed to create worktree entry")

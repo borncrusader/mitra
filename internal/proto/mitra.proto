@@ -10,6 +10,7 @@ message Repo {
   string host = 3;
   string owner = 4;
   string repo = 5;
+  string main_branch = 6;
 }
 
 message Worktree {

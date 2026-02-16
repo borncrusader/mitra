@@ -28,6 +28,7 @@ type Repo struct {
 	Host          string                 `protobuf:"bytes,3,opt,name=host,proto3" json:"host,omitempty"`
 	Owner         string                 `protobuf:"bytes,4,opt,name=owner,proto3" json:"owner,omitempty"`
 	Repo          string                 `protobuf:"bytes,5,opt,name=repo,proto3" json:"repo,omitempty"`
+	MainBranch    string                 `protobuf:"bytes,6,opt,name=main_branch,json=mainBranch,proto3" json:"main_branch,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -93,6 +94,13 @@ func (x *Repo) GetOwner() string {
 func (x *Repo) GetRepo() string {
 	if x != nil {
 		return x.Repo
+	}
+	return ""
+}
+
+func (x *Repo) GetMainBranch() string {
+	if x != nil {
+		return x.MainBranch
 	}
 	return ""
 }
@@ -861,13 +869,15 @@ var File_internal_proto_mitra_proto protoreflect.FileDescriptor
 
 const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\n" +
-	"\x1ainternal/proto/mitra.proto\x12\x05proto\"f\n" +
+	"\x1ainternal/proto/mitra.proto\x12\x05proto\"\x87\x01\n" +
 	"\x04Repo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x12\n" +
 	"\x04host\x18\x03 \x01(\tR\x04host\x12\x14\n" +
 	"\x05owner\x18\x04 \x01(\tR\x05owner\x12\x12\n" +
-	"\x04repo\x18\x05 \x01(\tR\x04repo\"\xb4\x01\n" +
+	"\x04repo\x18\x05 \x01(\tR\x04repo\x12\x1f\n" +
+	"\vmain_branch\x18\x06 \x01(\tR\n" +
+	"mainBranch\"\xb4\x01\n" +
 	"\bWorktree\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x16\n" +

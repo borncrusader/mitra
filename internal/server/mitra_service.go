@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"mitra/internal/config"
+	"mitra/internal/git"
 	"mitra/internal/proto"
 	"mitra/internal/tmux"
 	"mitra/internal/util"
@@ -70,7 +71,7 @@ func (s *MitraServiceServer) StartExistingWatchers() error {
 	for _, repo := range repos {
 		repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
 
-		watcher := NewRepoWatcher(s.logger, s.cfg, repo.Url, repo.Id, repo.Owner, repo.Repo, repoDir, s)
+		watcher := NewRepoWatcher(s.logger, s.cfg, repo.Url, repo.Id, repo.Owner, repo.Repo, repo.MainBranch, repoDir, s)
 
 		s.mu.Lock()
 		s.watchers[repo.Id] = watcher
@@ -115,6 +116,15 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 		}, nil
 	}
 
+	mainBranch, err := git.GetMainBranch(req.Url)
+	if err != nil {
+		s.logger.Warn().
+			Err(err).
+			Str("url", req.Url).
+			Msg("failed to detect main branch, using 'main'")
+		mainBranch = "main"
+	}
+
 	repo := &proto.Repo{
 		Id:    util.RandomName(),
 		Url:   req.Url,
@@ -128,6 +138,7 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 		Str("owner", owner).
 		Str("repo", repoName).
 		Str("url", req.Url).
+		Str("mainBranch", mainBranch).
 		Msg("adding repository")
 
 	if err := s.state.AddRepo(repo); err != nil {
@@ -139,7 +150,7 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 		return nil, fmt.Errorf("failed to create repo directory: %w", err)
 	}
 
-	watcher := NewRepoWatcher(s.logger, s.cfg, req.Url, repo.Id, owner, repoName, repoDir, s)
+	watcher := NewRepoWatcher(s.logger, s.cfg, req.Url, repo.Id, owner, repoName, mainBranch, repoDir, s)
 
 	s.mu.Lock()
 	s.watchers[repo.Id] = watcher

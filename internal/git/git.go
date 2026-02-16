@@ -41,13 +41,13 @@ func normalizeURL(repoURL string) string {
 	return repoURL
 }
 
-func GetDefaultBranch(repoURL string) (string, error) {
+func GetMainBranch(repoURL string) (string, error) {
 	repoURL = normalizeURL(repoURL)
 
 	cmd := exec.Command("git", "ls-remote", "--symref", repoURL, "HEAD")
 	output, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("failed to get default branch: %w", err)
+		return "", fmt.Errorf("failed to get main branch: %w", err)
 	}
 
 	lines := strings.Split(string(output), "\n")
