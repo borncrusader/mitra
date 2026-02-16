@@ -281,14 +281,14 @@ func (s *MitraServiceServer) ListSessions(ctx context.Context, req *proto.ListSe
 	for _, name := range sessionNames {
 		worktree, _ := s.state.FindWorktreeByID(name)
 
+		if worktree == nil {
+			continue
+		}
+
 		session := &proto.Session{
 			Id:         name,
 			WorktreeId: name,
-			Name:       name,
-		}
-
-		if worktree != nil {
-			session.Name = fmt.Sprintf("%s (%s)", worktree.Branch, worktree.Path)
+			Name:       fmt.Sprintf("%s (%s)", worktree.Branch, worktree.Path),
 		}
 
 		sessions = append(sessions, session)
