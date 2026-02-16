@@ -1,22 +1,16 @@
 package main
 
 import (
-	"context"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
-	"mitra/internal/config"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
 	"mitra/internal/tui"
-	"mitra/internal/util"
 )
 
 var worktreeCmd = &cobra.Command{
@@ -31,28 +25,18 @@ var worktreeAddCmd = &cobra.Command{
 	Short:   "Add a new worktree",
 	Args:    cobra.RangeArgs(0, 2),
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
-
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
+		defer cc.Close()
 
 		var repoID string
 		var branch string
 		var parentBranch *string
 
 		if len(args) == 0 {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			listResp, err := client.ListRepos(ctx, &proto.ListReposRequest{})
+			listResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to list repos")
 			}
@@ -79,9 +63,6 @@ var worktreeAddCmd = &cobra.Command{
 			}
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
 		req := &proto.AddWorktreeRequest{
 			RepoId: repoID,
 		}
@@ -92,7 +73,7 @@ var worktreeAddCmd = &cobra.Command{
 			req.ParentBranch = parentBranch
 		}
 
-		resp, err := client.AddWorktree(ctx, req)
+		resp, err := cc.Client.AddWorktree(cc.Ctx, req)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to add worktree")
 		}
@@ -110,27 +91,18 @@ var worktreeListCmd = &cobra.Command{
 	Short:   "List worktrees",
 	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
-
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+		defer cc.Close()
 
 		repoID := ""
 		if len(args) > 0 {
 			repoID = args[0]
 		}
 
-		resp, err := client.ListWorktrees(ctx, &proto.ListWorktreesRequest{
+		resp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{
 			RepoId: repoID,
 		})
 		if err != nil {
@@ -172,26 +144,16 @@ var worktreeDeleteCmd = &cobra.Command{
 	Short:   "Delete a worktree",
 	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
-
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
+		defer cc.Close()
 
 		var worktreeID string
 
 		if len(args) == 0 {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			listResp, err := client.ListWorktrees(ctx, &proto.ListWorktreesRequest{})
+			listResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to list worktrees")
 			}
@@ -206,10 +168,7 @@ var worktreeDeleteCmd = &cobra.Command{
 			worktreeID = args[0]
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		resp, err := client.DeleteWorktree(ctx, &proto.DeleteWorktreeRequest{
+		resp, err := cc.Client.DeleteWorktree(cc.Ctx, &proto.DeleteWorktreeRequest{
 			WorktreeId: worktreeID,
 		})
 		if err != nil {

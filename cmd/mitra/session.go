@@ -1,21 +1,15 @@
 package main
 
 import (
-	"context"
 	"os"
-	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
-	"mitra/internal/config"
 	"mitra/internal/proto"
 	"mitra/internal/tmux"
 	"mitra/internal/tui"
-	"mitra/internal/util"
 )
 
 var sessionCmd = &cobra.Command{
@@ -29,22 +23,13 @@ var sessionListCmd = &cobra.Command{
 	Aliases: []string{"l", "ls"},
 	Short:   "List sessions",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
+		defer cc.Close()
 
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		resp, err := client.ListSessions(ctx, &proto.ListSessionsRequest{})
+		resp, err := cc.Client.ListSessions(cc.Ctx, &proto.ListSessionsRequest{})
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to list sessions")
 		}
@@ -87,26 +72,16 @@ var sessionAttachCmd = &cobra.Command{
 	Short:   "Attach to a session",
 	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
-
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
+		defer cc.Close()
 
 		var sessionID string
 
 		if len(args) == 0 {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			listResp, err := client.ListSessions(ctx, &proto.ListSessionsRequest{})
+			listResp, err := cc.Client.ListSessions(cc.Ctx, &proto.ListSessionsRequest{})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to list sessions")
 			}
@@ -120,10 +95,7 @@ var sessionAttachCmd = &cobra.Command{
 		} else {
 			sessionID = args[0]
 
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			_, err = client.GetSession(ctx, &proto.GetSessionRequest{
+			_, err = cc.Client.GetSession(cc.Ctx, &proto.GetSessionRequest{
 				SessionId: sessionID,
 			})
 			if err != nil {

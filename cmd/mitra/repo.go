@@ -1,20 +1,14 @@
 package main
 
 import (
-	"context"
 	"os"
-	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
-	"mitra/internal/config"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
-	"mitra/internal/util"
 )
 
 var repoCmd = &cobra.Command{
@@ -31,22 +25,13 @@ var repoAddCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gitURL := args[0]
 
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
+		defer cc.Close()
 
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		resp, err := client.AddRepo(ctx, &proto.AddRepoRequest{
+		resp, err := cc.Client.AddRepo(cc.Ctx, &proto.AddRepoRequest{
 			Url: gitURL,
 		})
 		if err != nil {
@@ -66,22 +51,13 @@ var repoListCmd = &cobra.Command{
 	Aliases: []string{"l", "ls"},
 	Short:   "List repositories",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
+		cc, err := newClient()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to load config")
+			log.Fatal().Err(err).Msg("failed to create client")
 		}
+		defer cc.Close()
 
-		conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to connect to server")
-		}
-		defer util.DeferCheck(conn.Close)
-
-		client := proto.NewMitraServiceClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		resp, err := client.ListRepos(ctx, &proto.ListReposRequest{})
+		resp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to list repos")
 		}

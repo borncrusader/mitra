@@ -1,3 +1,1 @@
 - [ ] Add shell aliases automatically
-- [ ] short versions of commands
-- [ ] refactor client creation
