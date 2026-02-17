@@ -33,7 +33,7 @@ func NewTableSelector(columns []table.Column, rows []table.Row, promptText strin
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color("240")).
 		BorderBottom(true).
-		Bold(false)
+		Bold(true)
 	s.Selected = s.Selected.
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
@@ -131,7 +131,7 @@ func RenderTable(columns []table.Column, rows []table.Row) string {
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color("240")).
 		BorderBottom(true).
-		Bold(false)
+		Bold(true)
 	t.SetStyles(s)
 
 	return baseStyle.Render(t.View()) + "\n"
