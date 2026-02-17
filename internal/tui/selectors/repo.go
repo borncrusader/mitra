@@ -16,21 +16,16 @@ func SelectRepo(repos []*proto.Repo, promptText string) (*proto.Repo, error) {
 	// Build table columns
 	columns := []table.Column{
 		{Title: "Repo ID", Width: 20},
-		{Title: "Host", Width: 20},
-		{Title: "Owner", Width: 20},
-		{Title: "Repository", Width: 25},
-		{Title: "Main Branch", Width: 15},
+		{Title: "Repository", Width: 50},
 	}
 
 	// Build table rows
 	rows := []table.Row{}
 	for _, repo := range repos {
+		repoPath := fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
 		rows = append(rows, table.Row{
 			repo.Id,
-			repo.Host,
-			repo.Owner,
-			repo.Repo,
-			repo.MainBranch,
+			repoPath,
 		})
 	}
 
