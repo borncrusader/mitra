@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"mitra/internal/config"
+	"mitra/internal/git"
 	"mitra/internal/proto"
 	"mitra/internal/storage"
 	"mitra/internal/util"
@@ -20,6 +21,10 @@ func Run(logger zerolog.Logger) error {
 
 	if err := ensureConfigFiles(logger); err != nil {
 		return fmt.Errorf("failed to ensure config files: %w", err)
+	}
+
+	if err := ensureRepoMainBranches(logger); err != nil {
+		return fmt.Errorf("failed to ensure repo main branches: %w", err)
 	}
 
 	if err := ensureMainWorktrees(logger); err != nil {
@@ -193,6 +198,49 @@ func createEmptyWorktreeFile(path string) error {
 	return encoder.Encode(emptyStorage)
 }
 
+func ensureRepoMainBranches(logger zerolog.Logger) error {
+	repos, err := storage.LoadRepos()
+	if err != nil {
+		return err
+	}
+
+	updated := false
+	for _, repo := range repos {
+		if repo.MainBranch == "" {
+			logger.Info().
+				Str("repo_id", repo.Id).
+				Str("url", repo.Url).
+				Msg("detecting main branch for repo")
+
+			mainBranch, err := git.GetMainBranch(repo.Url)
+			if err != nil {
+				logger.Warn().
+					Err(err).
+					Str("repo_id", repo.Id).
+					Msg("failed to detect main branch, using 'main'")
+				mainBranch = "main"
+			}
+
+			repo.MainBranch = mainBranch
+			updated = true
+
+			logger.Info().
+				Str("repo_id", repo.Id).
+				Str("main_branch", mainBranch).
+				Msg("set main branch for repo")
+		}
+	}
+
+	if updated {
+		if err := storage.SaveRepos(repos); err != nil {
+			return err
+		}
+		logger.Info().Msg("updated repos with main branches")
+	}
+
+	return nil
+}
+
 func ensureMainWorktrees(logger zerolog.Logger) error {
 	repos, err := storage.LoadRepos()
 	if err != nil {
@@ -225,12 +273,17 @@ func ensureMainWorktrees(logger zerolog.Logger) error {
 				return err
 			}
 
-			worktreePath := filepath.Join(cfg.Repo.Dir, repo.Owner, repo.Repo, "main")
+			mainBranch := repo.MainBranch
+			if mainBranch == "" {
+				mainBranch = "main"
+			}
+
+			worktreePath := filepath.Join(cfg.Repo.Dir, repo.Owner, repo.Repo, mainBranch)
 
 			wt := &proto.Worktree{
 				Id:           util.RandomName(),
 				RepoId:       repo.Id,
-				Branch:       "main",
+				Branch:       mainBranch,
 				Path:         worktreePath,
 				IsMain:       true,
 				ParentBranch: nil,
