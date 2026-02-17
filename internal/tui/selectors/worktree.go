@@ -3,19 +3,26 @@ package selectors
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"mitra/internal/proto"
 )
 
+var baseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder()).
+	BorderForeground(lipgloss.Color("240"))
+
 type WorktreeSelectorModel struct {
+	table     table.Model
 	worktrees []*proto.Worktree
-	cursor    int
+	repos     map[string]*proto.Repo
 	selected  *proto.Worktree
 	quitting  bool
 }
 
-func NewWorktreeSelector(worktrees []*proto.Worktree) WorktreeSelectorModel {
+func NewWorktreeSelector(worktrees []*proto.Worktree, repos []*proto.Repo) WorktreeSelectorModel {
 	// Filter out main worktrees
 	var filtered []*proto.Worktree
 	for _, wt := range worktrees {
@@ -24,8 +31,65 @@ func NewWorktreeSelector(worktrees []*proto.Worktree) WorktreeSelectorModel {
 		}
 	}
 
+	// Create repo map for quick lookup
+	repoMap := make(map[string]*proto.Repo)
+	for _, r := range repos {
+		repoMap[r.Id] = r
+	}
+
+	// Build table columns
+	columns := []table.Column{
+		{Title: "Worktree ID", Width: 20},
+		{Title: "Repository", Width: 35},
+		{Title: "Branch", Width: 30},
+		{Title: "Parent Branch", Width: 20},
+	}
+
+	// Build table rows
+	rows := []table.Row{}
+	for _, wt := range filtered {
+		repo := repoMap[wt.RepoId]
+		repoStr := "unknown"
+		if repo != nil {
+			repoStr = fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
+		}
+
+		parentBranch := "-"
+		if wt.ParentBranch != nil {
+			parentBranch = *wt.ParentBranch
+		}
+
+		rows = append(rows, table.Row{
+			wt.Id,
+			repoStr,
+			wt.Branch,
+			parentBranch,
+		})
+	}
+
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithFocused(true),
+		table.WithHeight(len(rows)+1),
+	)
+
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("240")).
+		BorderBottom(true).
+		Bold(false)
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Color("229")).
+		Background(lipgloss.Color("57")).
+		Bold(false)
+	t.SetStyles(s)
+
 	return WorktreeSelectorModel{
+		table:     t,
 		worktrees: filtered,
+		repos:     repoMap,
 	}
 }
 
@@ -34,33 +98,29 @@ func (m WorktreeSelectorModel) Init() tea.Cmd {
 }
 
 func (m WorktreeSelectorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c", "q", "esc":
 			m.quitting = true
 			return m, tea.Quit
 
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-
-		case "down", "j":
-			if m.cursor < len(m.worktrees)-1 {
-				m.cursor++
-			}
-
 		case "enter":
 			if len(m.worktrees) > 0 {
-				m.selected = m.worktrees[m.cursor]
+				selectedIdx := m.table.Cursor()
+				if selectedIdx < len(m.worktrees) {
+					m.selected = m.worktrees[selectedIdx]
+				}
 			}
 			m.quitting = true
 			return m, tea.Quit
 		}
 	}
 
-	return m, nil
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
 }
 
 func (m WorktreeSelectorModel) View() string {
@@ -72,32 +132,14 @@ func (m WorktreeSelectorModel) View() string {
 		return "No non-main worktrees found.\n"
 	}
 
-	s := "Select a worktree to delete:\n\n"
-
-	for i, wt := range m.worktrees {
-		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
-		}
-
-		parentInfo := ""
-		if wt.ParentBranch != nil {
-			parentInfo = fmt.Sprintf(" (from %s)", *wt.ParentBranch)
-		}
-
-		s += fmt.Sprintf("%s %s - %s%s\n", cursor, wt.Branch, wt.Path, parentInfo)
-	}
-
-	s += "\nPress up/down to navigate, enter to select, q to quit.\n"
-
-	return s
+	return baseStyle.Render(m.table.View()) + "\n\nPress ↑/↓ to navigate • enter to select • q to quit\n"
 }
 
 func (m WorktreeSelectorModel) Selected() *proto.Worktree {
 	return m.selected
 }
 
-func SelectWorktree(worktrees []*proto.Worktree) (*proto.Worktree, error) {
+func SelectWorktree(worktrees []*proto.Worktree, repos []*proto.Repo) (*proto.Worktree, error) {
 	// Filter out main worktrees
 	var filtered []*proto.Worktree
 	for _, wt := range worktrees {
@@ -110,7 +152,7 @@ func SelectWorktree(worktrees []*proto.Worktree) (*proto.Worktree, error) {
 		return nil, fmt.Errorf("no non-main worktrees found")
 	}
 
-	p := tea.NewProgram(NewWorktreeSelector(worktrees))
+	p := tea.NewProgram(NewWorktreeSelector(worktrees, repos))
 	model, err := p.Run()
 	if err != nil {
 		return nil, err

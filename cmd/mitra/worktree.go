@@ -153,12 +153,17 @@ var worktreeDeleteCmd = &cobra.Command{
 		var worktreeID string
 
 		if len(args) == 0 {
-			listResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
+			worktreesResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to list worktrees")
 			}
 
-			selectedWorktree, err := selectors.SelectWorktree(listResp.Worktrees)
+			reposResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list repos")
+			}
+
+			selectedWorktree, err := selectors.SelectWorktree(worktreesResp.Worktrees, reposResp.Repos)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select worktree")
 			}
