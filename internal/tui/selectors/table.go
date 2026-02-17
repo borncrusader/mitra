@@ -125,6 +125,8 @@ func RenderTable(columns []table.Column, rows []table.Row) string {
 	)
 
 	s := table.DefaultStyles()
+	// reset the selected field since we're just displaying
+	s.Selected = lipgloss.NewStyle()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color("240")).
