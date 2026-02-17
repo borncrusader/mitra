@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -129,36 +130,69 @@ var worktreeListCmd = &cobra.Command{
 			repoMap[r.Id] = r
 		}
 
-		// Build table columns
+		// Group worktrees by repo
+		worktreesByRepo := make(map[string][]*proto.Worktree)
+		for _, wt := range worktreesResp.Worktrees {
+			worktreesByRepo[wt.RepoId] = append(worktreesByRepo[wt.RepoId], wt)
+		}
+
+		// Build table columns (without Repository column since it's in section headers)
 		columns := []table.Column{
 			{Title: "Worktree ID", Width: selectors.ColumnWidths["Worktree ID"]},
-			{Title: "Repository", Width: selectors.ColumnWidths["Repository"]},
 			{Title: "Branch", Width: selectors.ColumnWidths["Branch"]},
 			{Title: "Parent Branch", Width: selectors.ColumnWidths["Parent Branch"]},
 			{Title: "Status", Width: selectors.ColumnWidths["Status"]},
 		}
 
-		// Build table rows
+		// Build table rows grouped by repo
 		rows := []table.Row{}
-		for _, wt := range worktreesResp.Worktrees {
-			repo := repoMap[wt.RepoId]
-			repoStr := "unknown"
-			if repo != nil {
-				repoStr = fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
-			}
 
-			parentBranch := "-"
-			if wt.ParentBranch != nil {
-				parentBranch = *wt.ParentBranch
+		// Get repos sorted by worktree count (descending)
+		type repoWithCount struct {
+			repo  *proto.Repo
+			count int
+		}
+		var sortedRepos []repoWithCount
+		for repoID, worktrees := range worktreesByRepo {
+			if repo := repoMap[repoID]; repo != nil {
+				sortedRepos = append(sortedRepos, repoWithCount{repo, len(worktrees)})
 			}
+		}
+		sort.Slice(sortedRepos, func(i, j int) bool {
+			return sortedRepos[i].count > sortedRepos[j].count
+		})
 
+		// Build rows with section headers
+		for i, rc := range sortedRepos {
+			// Add section header
+			repoStr := fmt.Sprintf("━━━ %s/%s/%s (%d worktrees) ━━━",
+				rc.repo.Host, rc.repo.Owner, rc.repo.Repo, rc.count)
 			rows = append(rows, table.Row{
-				wt.Id,
 				repoStr,
-				wt.Branch,
-				parentBranch,
-				wt.Status,
+				"",
+				"",
+				"",
 			})
+
+			// Add worktrees for this repo
+			for _, wt := range worktreesByRepo[rc.repo.Id] {
+				parentBranch := "-"
+				if wt.ParentBranch != nil {
+					parentBranch = *wt.ParentBranch
+				}
+
+				rows = append(rows, table.Row{
+					wt.Id,
+					wt.Branch,
+					parentBranch,
+					wt.Status,
+				})
+			}
+
+			// Add spacing between sections (except after last section)
+			if i < len(sortedRepos)-1 {
+				rows = append(rows, table.Row{"", "", "", ""})
+			}
 		}
 
 		output := selectors.RenderTable(columns, rows)
