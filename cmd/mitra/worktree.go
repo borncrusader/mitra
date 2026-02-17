@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -144,9 +145,6 @@ var worktreeListCmd = &cobra.Command{
 			{Title: "Status", Width: selectors.ColumnWidths["Status"]},
 		}
 
-		// Build table rows grouped by repo
-		rows := []table.Row{}
-
 		// Get repos sorted by worktree count (descending)
 		type repoWithCount struct {
 			repo  *proto.Repo
@@ -162,18 +160,21 @@ var worktreeListCmd = &cobra.Command{
 			return sortedRepos[i].count > sortedRepos[j].count
 		})
 
-		// Build rows with section headers
-		for i, rc := range sortedRepos {
-			// Add section header spanning all columns
-			repoPath := fmt.Sprintf("%s/%s/%s", rc.repo.Host, rc.repo.Owner, rc.repo.Repo)
-			rows = append(rows, table.Row{
-				"━━━━━━━━━━━━━━━━━━━━━",
-				fmt.Sprintf("Repository: %s", repoPath),
-				fmt.Sprintf("(%d worktrees)", rc.count),
-				"━━━━━━━━━━━━━━━━━━━━",
-			})
+		// Style for section headers
+		headerStyle := lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("12")).
+			PaddingLeft(1)
 
-			// Add worktrees for this repo
+		// Print each repo section
+		for i, rc := range sortedRepos {
+			// Print section header
+			repoPath := fmt.Sprintf("%s/%s/%s", rc.repo.Host, rc.repo.Owner, rc.repo.Repo)
+			header := fmt.Sprintf("Repository: %s (%d worktrees)", repoPath, rc.count)
+			fmt.Println(headerStyle.Render(header))
+
+			// Build rows for this repo
+			rows := []table.Row{}
 			for _, wt := range worktreesByRepo[rc.repo.Id] {
 				parentBranch := "-"
 				if wt.ParentBranch != nil {
@@ -188,14 +189,15 @@ var worktreeListCmd = &cobra.Command{
 				})
 			}
 
+			// Print table for this repo
+			output := selectors.RenderTable(columns, rows)
+			fmt.Print(output)
+
 			// Add spacing between sections (except after last section)
 			if i < len(sortedRepos)-1 {
-				rows = append(rows, table.Row{"", "", "", ""})
+				fmt.Println()
 			}
 		}
-
-		output := selectors.RenderTable(columns, rows)
-		fmt.Print(output)
 	},
 }
 
