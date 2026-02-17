@@ -86,9 +86,9 @@ var repoListCmd = &cobra.Command{
 
 		// Build table columns
 		columns := []table.Column{
-			{Title: "Repo ID", Width: 20},
-			{Title: "Repository", Width: 50},
-			{Title: "Worktrees", Width: 10},
+			{Title: "Repo ID", Width: selectors.ColumnWidths["Repo ID"]},
+			{Title: "Repository", Width: selectors.ColumnWidths["Repository"]},
+			{Title: "Worktrees", Width: selectors.ColumnWidths["Worktrees"]},
 		}
 
 		// Build table rows

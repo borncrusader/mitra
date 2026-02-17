@@ -26,9 +26,9 @@ func SelectSession(sessions []*proto.Session, worktrees []*proto.Worktree, repos
 
 	// Build table columns
 	columns := []table.Column{
-		{Title: "Repository", Width: 40},
-		{Title: "Branch", Width: 30},
-		{Title: "Worktree ID", Width: 20},
+		{Title: "Repository", Width: ColumnWidths["Repository"]},
+		{Title: "Branch", Width: ColumnWidths["Branch"]},
+		{Title: "Worktree ID", Width: ColumnWidths["Worktree ID"]},
 	}
 
 	// Build table rows

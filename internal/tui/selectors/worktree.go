@@ -29,10 +29,10 @@ func SelectWorktree(worktrees []*proto.Worktree, repos []*proto.Repo) (*proto.Wo
 
 	// Build table columns
 	columns := []table.Column{
-		{Title: "Worktree ID", Width: 20},
-		{Title: "Repository", Width: 35},
-		{Title: "Branch", Width: 30},
-		{Title: "Parent Branch", Width: 20},
+		{Title: "Worktree ID", Width: ColumnWidths["Worktree ID"]},
+		{Title: "Repository", Width: ColumnWidths["Repository"]},
+		{Title: "Branch", Width: ColumnWidths["Branch"]},
+		{Title: "Parent Branch", Width: ColumnWidths["Parent Branch"]},
 	}
 
 	// Build table rows

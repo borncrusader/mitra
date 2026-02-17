@@ -30,9 +30,9 @@ func SelectRepo(repos []*proto.Repo, worktrees []*proto.Worktree, promptText str
 
 	// Build table columns
 	columns := []table.Column{
-		{Title: "Repo ID", Width: 20},
-		{Title: "Repository", Width: 50},
-		{Title: "Worktrees", Width: 10},
+		{Title: "Repo ID", Width: ColumnWidths["Repo ID"]},
+		{Title: "Repository", Width: ColumnWidths["Repository"]},
+		{Title: "Worktrees", Width: ColumnWidths["Worktrees"]},
 	}
 
 	// Build table rows

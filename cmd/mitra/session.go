@@ -62,9 +62,9 @@ var sessionListCmd = &cobra.Command{
 
 		// Build table columns
 		columns := []table.Column{
-			{Title: "Repository", Width: 40},
-			{Title: "Branch", Width: 30},
-			{Title: "Worktree ID", Width: 20},
+			{Title: "Repository", Width: selectors.ColumnWidths["Repository"]},
+			{Title: "Branch", Width: selectors.ColumnWidths["Branch"]},
+			{Title: "Worktree ID", Width: selectors.ColumnWidths["Worktree ID"]},
 		}
 
 		// Build table rows
