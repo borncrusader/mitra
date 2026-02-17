@@ -111,7 +111,7 @@ var repoDeleteCmd = &cobra.Command{
 				log.Fatal().Err(err).Msg("failed to list repos")
 			}
 
-			selectedRepo, err := selectors.SelectRepo(listResp.Repos)
+			selectedRepo, err := selectors.SelectRepo(listResp.Repos, "Select a repository to delete:")
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select repo")
 			}
