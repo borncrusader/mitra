@@ -45,7 +45,7 @@ var worktreeAddCmd = &cobra.Command{
 				log.Fatal().Err(err).Msg("failed to list worktrees")
 			}
 
-			selectedRepo, err := selectors.SelectRepo(reposResp.Repos, worktreesResp.Worktrees, "Select a repository for the new worktree:")
+			selectedRepo, err := selectors.SelectRepo(reposResp.Repos, worktreesResp.Worktrees, "Select a repository for the new worktree:", false)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select repo")
 			}

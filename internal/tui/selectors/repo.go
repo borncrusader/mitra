@@ -9,7 +9,7 @@ import (
 	"mitra/internal/proto"
 )
 
-func SelectRepo(repos []*proto.Repo, worktrees []*proto.Worktree, promptText string) (*proto.Repo, error) {
+func SelectRepo(repos []*proto.Repo, worktrees []*proto.Worktree, promptText string, sortAscending bool) (*proto.Repo, error) {
 	if len(repos) == 0 {
 		return nil, fmt.Errorf("no repositories found")
 	}
@@ -20,8 +20,11 @@ func SelectRepo(repos []*proto.Repo, worktrees []*proto.Worktree, promptText str
 		worktreeCounts[wt.RepoId]++
 	}
 
-	// Sort repos by worktree count (descending)
+	// Sort repos by worktree count
 	sort.Slice(repos, func(i, j int) bool {
+		if sortAscending {
+			return worktreeCounts[repos[i].Id] < worktreeCounts[repos[j].Id]
+		}
 		return worktreeCounts[repos[i].Id] > worktreeCounts[repos[j].Id]
 	})
 
