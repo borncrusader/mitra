@@ -158,7 +158,11 @@ func AttachSession(name string) error {
 // AttachSessionExec attaches to a tmux session by replacing the current process
 // This is useful for CLI commands where you want to "become" the tmux attach process
 func AttachSessionExec(name string) error {
-	return syscall.Exec("/usr/bin/tmux", []string{"tmux", "attach-session", "-t", name}, syscall.Environ())
+	tmuxPath, err := exec.LookPath("tmux")
+	if err != nil {
+		return fmt.Errorf("tmux not found in PATH: %w", err)
+	}
+	return syscall.Exec(tmuxPath, []string{"tmux", "attach-session", "-t", name}, syscall.Environ())
 }
 
 // SplitWindow splits a tmux window horizontally
