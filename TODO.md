@@ -4,3 +4,4 @@
 - [ ] spinner when deleting
 - [ ] disable syncing
 - [ ] more granular repo state management
+- [ ] config Storage goroutine
