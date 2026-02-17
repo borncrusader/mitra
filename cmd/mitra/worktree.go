@@ -35,12 +35,17 @@ var worktreeAddCmd = &cobra.Command{
 		var parentBranch *string
 
 		if len(args) == 0 {
-			listResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+			reposResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to list repos")
 			}
 
-			selectedRepo, err := selectors.SelectRepo(listResp.Repos, "Select a repository for the new worktree:")
+			worktreesResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list worktrees")
+			}
+
+			selectedRepo, err := selectors.SelectRepo(reposResp.Repos, worktreesResp.Worktrees, "Select a repository for the new worktree:")
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select repo")
 			}
