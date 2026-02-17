@@ -135,12 +135,23 @@ func (cmd *deleteWorktreeCmd) Execute(w *RepoWatcher) error {
 		return err
 	}
 
+	w.logger.Debug().
+		Str("worktree_id", cmd.worktreeID).
+		Str("path", worktreeToDelete.Path).
+		Msg("checking if worktree is clean")
+
 	isClean, reason, err := git.IsClean(worktreeToDelete.Path, repo.MainBranch)
 	if err != nil {
 		err := fmt.Errorf("failed to check if worktree is clean: %w", err)
 		cmd.responseChan <- err
 		return err
 	}
+
+	w.logger.Debug().
+		Str("worktree_id", cmd.worktreeID).
+		Bool("is_clean", isClean).
+		Str("reason", string(reason)).
+		Msg("worktree clean check complete")
 
 	if !isClean {
 		err := fmt.Errorf("worktree is not clean: %s", reason)
@@ -154,10 +165,18 @@ func (cmd *deleteWorktreeCmd) Execute(w *RepoWatcher) error {
 		Str("path", worktreeToDelete.Path).
 		Msg("deleting worktree")
 
+	w.logger.Debug().
+		Str("worktree_id", cmd.worktreeID).
+		Msg("removing git worktree")
+
 	if err := git.RemoveWorktree(mainWorktree.Path, worktreeToDelete.Path); err != nil {
 		cmd.responseChan <- err
 		return err
 	}
+
+	w.logger.Debug().
+		Str("worktree_id", cmd.worktreeID).
+		Msg("git worktree removed")
 
 	if err := w.service.state.DeleteWorktree(index); err != nil {
 		cmd.responseChan <- err
