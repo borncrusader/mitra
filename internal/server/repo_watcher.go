@@ -117,7 +117,7 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 					Msg("command execution failed")
 			}
 		case <-ticker.C:
-			isClean, err := git.IsClean(cloneDir)
+			isClean, reason, err := git.IsClean(cloneDir)
 			if err != nil {
 				w.logger.Warn().
 					Err(err).
@@ -127,6 +127,7 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 
 			if !isClean {
 				w.logger.Debug().
+					Str("reason", string(reason)).
 					Msg("worktree is not clean, skipping pull")
 				continue
 			}

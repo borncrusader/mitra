@@ -7,6 +7,24 @@ import (
 	"strings"
 )
 
+type DirtyReason string
+
+const (
+	DirtyReasonClean              DirtyReason = ""
+	DirtyReasonUncommittedChanges DirtyReason = "uncommitted_changes"
+	DirtyReasonUntrackedFiles     DirtyReason = "untracked_files"
+	DirtyReasonStashedChanges     DirtyReason = "stashed_changes"
+	DirtyReasonMergeInProgress    DirtyReason = "merge_in_progress"
+	DirtyReasonRebaseInProgress   DirtyReason = "rebase_in_progress"
+	DirtyReasonCherryPickInProgress DirtyReason = "cherry_pick_in_progress"
+	DirtyReasonRevertInProgress   DirtyReason = "revert_in_progress"
+	DirtyReasonBisectInProgress   DirtyReason = "bisect_in_progress"
+	DirtyReasonDetachedHead       DirtyReason = "detached_head"
+	DirtyReasonUnpushedCommits    DirtyReason = "unpushed_commits"
+	DirtyReasonUnmergedBranches   DirtyReason = "unmerged_branches"
+	DirtyReasonCurrentBranchNotMerged DirtyReason = "current_branch_not_merged"
+)
+
 func normalizeURL(repoURL string) string {
 	if strings.HasPrefix(repoURL, "git@") {
 		return repoURL
@@ -58,63 +76,122 @@ func Clone(repoURL, targetDir, branch string) error {
 	return cmd.Run()
 }
 
-func IsClean(repoPath string) (bool, error) {
+func IsClean(repoPath string) (bool, DirtyReason, error) {
 	// Check for uncommitted and untracked changes
 	cmd := exec.Command("git", "-C", repoPath, "status", "--porcelain")
 	output, err := cmd.Output()
 	if err != nil {
-		return false, fmt.Errorf("failed to check git status: %w", err)
+		return false, DirtyReasonClean, fmt.Errorf("failed to check git status: %w", err)
 	}
 	if len(strings.TrimSpace(string(output))) > 0 {
-		return false, nil
+		return false, DirtyReasonUncommittedChanges, nil
 	}
 
 	// Check for stashed changes
 	cmd = exec.Command("git", "-C", repoPath, "stash", "list")
 	output, err = cmd.Output()
 	if err != nil {
-		return false, fmt.Errorf("failed to check git stash: %w", err)
+		return false, DirtyReasonClean, fmt.Errorf("failed to check git stash: %w", err)
 	}
 	if len(strings.TrimSpace(string(output))) > 0 {
-		return false, nil
+		return false, DirtyReasonStashedChanges, nil
+	}
+
+	// Check for merge in progress
+	gitDir := fmt.Sprintf("%s/.git", repoPath)
+	if _, err := os.Stat(fmt.Sprintf("%s/MERGE_HEAD", gitDir)); err == nil {
+		return false, DirtyReasonMergeInProgress, nil
+	}
+
+	// Check for rebase in progress
+	if _, err := os.Stat(fmt.Sprintf("%s/rebase-merge", gitDir)); err == nil {
+		return false, DirtyReasonRebaseInProgress, nil
+	}
+	if _, err := os.Stat(fmt.Sprintf("%s/rebase-apply", gitDir)); err == nil {
+		return false, DirtyReasonRebaseInProgress, nil
+	}
+
+	// Check for cherry-pick in progress
+	if _, err := os.Stat(fmt.Sprintf("%s/CHERRY_PICK_HEAD", gitDir)); err == nil {
+		return false, DirtyReasonCherryPickInProgress, nil
+	}
+
+	// Check for revert in progress
+	if _, err := os.Stat(fmt.Sprintf("%s/REVERT_HEAD", gitDir)); err == nil {
+		return false, DirtyReasonRevertInProgress, nil
+	}
+
+	// Check for bisect in progress
+	if _, err := os.Stat(fmt.Sprintf("%s/BISECT_LOG", gitDir)); err == nil {
+		return false, DirtyReasonBisectInProgress, nil
 	}
 
 	// Get current branch name
 	cmd = exec.Command("git", "-C", repoPath, "branch", "--show-current")
 	output, err = cmd.Output()
 	if err != nil {
-		return false, fmt.Errorf("failed to get current branch: %w", err)
+		return false, DirtyReasonClean, fmt.Errorf("failed to get current branch: %w", err)
 	}
 	currentBranch := strings.TrimSpace(string(output))
 
-	// If on main/master, no need to check merge status
-	if currentBranch == "main" || currentBranch == "master" {
-		return true, nil
+	// Check for detached HEAD
+	if currentBranch == "" {
+		return false, DirtyReasonDetachedHead, nil
 	}
 
-	// Check if current branch has been merged to main/master
-	// Try main first
-	cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", "main")
+	// Determine default branch (main or master)
+	defaultBranch := "main"
+	cmd = exec.Command("git", "-C", repoPath, "rev-parse", "--verify", "main")
+	if err := cmd.Run(); err != nil {
+		defaultBranch = "master"
+	}
+
+	// Check for unpushed commits on current branch
+	cmd = exec.Command("git", "-C", repoPath, "rev-list", "--count", "@{u}..HEAD")
+	output, err = cmd.Output()
+	if err == nil {
+		unpushedCount := strings.TrimSpace(string(output))
+		if unpushedCount != "0" && unpushedCount != "" {
+			return false, DirtyReasonUnpushedCommits, nil
+		}
+	}
+
+	// Check for unmerged local branches
+	cmd = exec.Command("git", "-C", repoPath, "branch", "--no-merged", defaultBranch)
 	output, err = cmd.Output()
 	if err != nil {
-		// Try master if main doesn't exist
-		cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", "master")
+		return false, DirtyReasonClean, fmt.Errorf("failed to check unmerged branches: %w", err)
+	}
+	unmergedBranches := strings.TrimSpace(string(output))
+	if len(unmergedBranches) > 0 {
+		return false, DirtyReasonUnmergedBranches, nil
+	}
+
+	// If not on default branch, check if current branch has been merged
+	if currentBranch != "main" && currentBranch != "master" {
+		cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", defaultBranch)
 		output, err = cmd.Output()
 		if err != nil {
-			return false, fmt.Errorf("failed to check merge status: %w", err)
+			return false, DirtyReasonClean, fmt.Errorf("failed to check merge status: %w", err)
+		}
+
+		// Check if current branch is in the merged branches list
+		mergedBranches := strings.Split(strings.TrimSpace(string(output)), "\n")
+		isMerged := false
+		for _, branch := range mergedBranches {
+			branch = strings.TrimSpace(strings.TrimPrefix(branch, "*"))
+			if branch == currentBranch {
+				isMerged = true
+				break
+			}
+		}
+
+		if !isMerged {
+			return false, DirtyReasonCurrentBranchNotMerged, nil
 		}
 	}
 
-	// Check if current branch is in the merged branches list
-	mergedBranches := strings.Split(strings.TrimSpace(string(output)), "\n")
-	for _, branch := range mergedBranches {
-		branch = strings.TrimSpace(strings.TrimPrefix(branch, "*"))
-		if branch == currentBranch {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return true, DirtyReasonClean, nil
 }
 
 func Pull(repoPath string) error {
