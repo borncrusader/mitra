@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/rs/zerolog/log"
@@ -77,6 +78,11 @@ var repoListCmd = &cobra.Command{
 		for _, wt := range worktreesResp.Worktrees {
 			worktreeCounts[wt.RepoId]++
 		}
+
+		// Sort repos by worktree count (descending)
+		sort.Slice(reposResp.Repos, func(i, j int) bool {
+			return worktreeCounts[reposResp.Repos[i].Id] > worktreeCounts[reposResp.Repos[j].Id]
+		})
 
 		// Build table columns
 		columns := []table.Column{
