@@ -59,13 +59,62 @@ func Clone(repoURL, targetDir, branch string) error {
 }
 
 func IsClean(repoPath string) (bool, error) {
+	// Check for uncommitted and untracked changes
 	cmd := exec.Command("git", "-C", repoPath, "status", "--porcelain")
 	output, err := cmd.Output()
 	if err != nil {
 		return false, fmt.Errorf("failed to check git status: %w", err)
 	}
+	if len(strings.TrimSpace(string(output))) > 0 {
+		return false, nil
+	}
 
-	return len(strings.TrimSpace(string(output))) == 0, nil
+	// Check for stashed changes
+	cmd = exec.Command("git", "-C", repoPath, "stash", "list")
+	output, err = cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("failed to check git stash: %w", err)
+	}
+	if len(strings.TrimSpace(string(output))) > 0 {
+		return false, nil
+	}
+
+	// Get current branch name
+	cmd = exec.Command("git", "-C", repoPath, "branch", "--show-current")
+	output, err = cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("failed to get current branch: %w", err)
+	}
+	currentBranch := strings.TrimSpace(string(output))
+
+	// If on main/master, no need to check merge status
+	if currentBranch == "main" || currentBranch == "master" {
+		return true, nil
+	}
+
+	// Check if current branch has been merged to main/master
+	// Try main first
+	cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", "main")
+	output, err = cmd.Output()
+	if err != nil {
+		// Try master if main doesn't exist
+		cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", "master")
+		output, err = cmd.Output()
+		if err != nil {
+			return false, fmt.Errorf("failed to check merge status: %w", err)
+		}
+	}
+
+	// Check if current branch is in the merged branches list
+	mergedBranches := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, branch := range mergedBranches {
+		branch = strings.TrimSpace(strings.TrimPrefix(branch, "*"))
+		if branch == currentBranch {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func Pull(repoPath string) error {
