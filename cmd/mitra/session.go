@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/BurntSushi/toml"
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -29,40 +29,69 @@ var sessionListCmd = &cobra.Command{
 		}
 		defer cc.Close()
 
-		resp, err := cc.Client.ListSessions(cc.Ctx, &proto.ListSessionsRequest{})
+		sessionsResp, err := cc.Client.ListSessions(cc.Ctx, &proto.ListSessionsRequest{})
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to list sessions")
 		}
 
-		if len(resp.Sessions) == 0 {
+		if len(sessionsResp.Sessions) == 0 {
+			fmt.Println("No sessions found.")
 			return
 		}
 
-		type sessionOutput struct {
-			ID         string `toml:"id"`
-			WorktreeID string `toml:"worktree_id"`
-			Name       string `toml:"name"`
+		worktreesResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to list worktrees")
 		}
 
-		sessions := make([]sessionOutput, len(resp.Sessions))
-		for i, s := range resp.Sessions {
-			sessions[i] = sessionOutput{
-				ID:         s.Id,
-				WorktreeID: s.WorktreeId,
-				Name:       s.Name,
+		reposResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to list repos")
+		}
+
+		// Create lookup maps
+		worktreeMap := make(map[string]*proto.Worktree)
+		for _, wt := range worktreesResp.Worktrees {
+			worktreeMap[wt.Id] = wt
+		}
+
+		repoMap := make(map[string]*proto.Repo)
+		for _, r := range reposResp.Repos {
+			repoMap[r.Id] = r
+		}
+
+		// Build table columns
+		columns := []table.Column{
+			{Title: "Repository", Width: 40},
+			{Title: "Branch", Width: 30},
+			{Title: "Worktree ID", Width: 20},
+		}
+
+		// Build table rows
+		rows := []table.Row{}
+		for _, session := range sessionsResp.Sessions {
+			worktree := worktreeMap[session.WorktreeId]
+
+			repoPath := "unknown"
+			branch := "unknown"
+
+			if worktree != nil {
+				branch = worktree.Branch
+				repo := repoMap[worktree.RepoId]
+				if repo != nil {
+					repoPath = fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
+				}
 			}
+
+			rows = append(rows, table.Row{
+				repoPath,
+				branch,
+				session.WorktreeId,
+			})
 		}
 
-		sessionStorage := struct {
-			Sessions []sessionOutput `toml:"sessions"`
-		}{
-			Sessions: sessions,
-		}
-
-		encoder := toml.NewEncoder(os.Stdout)
-		if err := encoder.Encode(sessionStorage); err != nil {
-			log.Fatal().Err(err).Msg("failed to encode sessions")
-		}
+		output := selectors.RenderTable(columns, rows)
+		fmt.Print(output)
 	},
 }
 

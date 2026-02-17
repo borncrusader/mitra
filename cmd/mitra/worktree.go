@@ -1,15 +1,14 @@
 package main
 
 import (
-	"os"
+	"fmt"
 	"strings"
 
-	"github.com/BurntSushi/toml"
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"mitra/internal/proto"
-	"mitra/internal/storage"
 	"mitra/internal/tui/selectors"
 )
 
@@ -102,39 +101,61 @@ var worktreeListCmd = &cobra.Command{
 			repoID = args[0]
 		}
 
-		resp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{
+		worktreesResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{
 			RepoId: repoID,
 		})
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to list worktrees")
 		}
 
-		if len(resp.Worktrees) == 0 {
+		if len(worktreesResp.Worktrees) == 0 {
+			fmt.Println("No worktrees found.")
 			return
 		}
 
-		storageWorktrees := make([]*storage.Worktree, len(resp.Worktrees))
-		for i, wt := range resp.Worktrees {
-			storageWorktrees[i] = &storage.Worktree{
-				ID:           wt.Id,
-				RepoID:       wt.RepoId,
-				Branch:       wt.Branch,
-				Path:         wt.Path,
-				IsMain:       wt.IsMain,
-				ParentBranch: wt.ParentBranch,
+		reposResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to list repos")
+		}
+
+		// Create repo map for quick lookup
+		repoMap := make(map[string]*proto.Repo)
+		for _, r := range reposResp.Repos {
+			repoMap[r.Id] = r
+		}
+
+		// Build table columns
+		columns := []table.Column{
+			{Title: "Worktree ID", Width: 20},
+			{Title: "Repository", Width: 35},
+			{Title: "Branch", Width: 30},
+			{Title: "Parent Branch", Width: 20},
+		}
+
+		// Build table rows
+		rows := []table.Row{}
+		for _, wt := range worktreesResp.Worktrees {
+			repo := repoMap[wt.RepoId]
+			repoStr := "unknown"
+			if repo != nil {
+				repoStr = fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
 			}
+
+			parentBranch := "-"
+			if wt.ParentBranch != nil {
+				parentBranch = *wt.ParentBranch
+			}
+
+			rows = append(rows, table.Row{
+				wt.Id,
+				repoStr,
+				wt.Branch,
+				parentBranch,
+			})
 		}
 
-		worktreeStorage := struct {
-			Worktrees []*storage.Worktree `toml:"worktrees"`
-		}{
-			Worktrees: storageWorktrees,
-		}
-
-		encoder := toml.NewEncoder(os.Stdout)
-		if err := encoder.Encode(worktreeStorage); err != nil {
-			log.Fatal().Err(err).Msg("failed to encode worktrees")
-		}
+		output := selectors.RenderTable(columns, rows)
+		fmt.Print(output)
 	},
 }
 

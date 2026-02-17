@@ -1,14 +1,13 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/BurntSushi/toml"
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"mitra/internal/proto"
-	"mitra/internal/storage"
 	"mitra/internal/tui/selectors"
 )
 
@@ -64,30 +63,28 @@ var repoListCmd = &cobra.Command{
 		}
 
 		if len(resp.Repos) == 0 {
+			fmt.Println("No repositories found.")
 			return
 		}
 
-		storageRepos := make([]*storage.Repo, len(resp.Repos))
-		for i, r := range resp.Repos {
-			storageRepos[i] = &storage.Repo{
-				ID:    r.Id,
-				URL:   r.Url,
-				Host:  r.Host,
-				Owner: r.Owner,
-				Repo:  r.Repo,
-			}
+		// Build table columns
+		columns := []table.Column{
+			{Title: "Repo ID", Width: 20},
+			{Title: "Repository", Width: 50},
 		}
 
-		repoStorage := struct {
-			Repos []*storage.Repo `toml:"repos"`
-		}{
-			Repos: storageRepos,
+		// Build table rows
+		rows := []table.Row{}
+		for _, repo := range resp.Repos {
+			repoPath := fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
+			rows = append(rows, table.Row{
+				repo.Id,
+				repoPath,
+			})
 		}
 
-		encoder := toml.NewEncoder(os.Stdout)
-		if err := encoder.Encode(repoStorage); err != nil {
-			log.Fatal().Err(err).Msg("failed to encode repos")
-		}
+		output := selectors.RenderTable(columns, rows)
+		fmt.Print(output)
 	},
 }
 

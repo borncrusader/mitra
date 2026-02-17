@@ -109,3 +109,27 @@ func RunTableSelector(columns []table.Column, rows []table.Row, promptText strin
 	m := model.(TableSelectorModel)
 	return m.SelectedIndex(), nil
 }
+
+// RenderTable renders a non-interactive table for display
+func RenderTable(columns []table.Column, rows []table.Row) string {
+	if len(rows) == 0 {
+		return "No items found.\n"
+	}
+
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithFocused(false),
+		table.WithHeight(len(rows)),
+	)
+
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("240")).
+		BorderBottom(true).
+		Bold(false)
+	t.SetStyles(s)
+
+	return baseStyle.Render(t.View()) + "\n"
+}
