@@ -1,3 +1,6 @@
 - [ ] Add shell aliases automatically
 - [ ] mac menubar
-- [ ] repo doctor
+- [ ] repo doctor - repurpose repo list perhaps?
+- [ ] spinner when deleting
+- [ ] disable syncing
+- [ ] more granular repo state management
