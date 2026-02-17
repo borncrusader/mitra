@@ -119,7 +119,7 @@ Use "mitra [command] --help" for more information about a command.
 - `mitra config generate` (aliases: `c g`, `c gen`) - Generate default config file
 - `mitra repo add <url>` (aliases: `r a`) - Add a repository
 - `mitra repo list` (aliases: `r l`, `r ls`) - List repos (TOML format)
-- `mitra repo delete <repo-id>` (aliases: `r d`, `r del`, `r rm`) - Delete a repository (requires all non-main worktrees deleted and main worktree clean)
+- `mitra repo delete [repo-id]` (aliases: `r d`, `r del`, `r rm`) - Delete a repository (interactive TUI if no args, requires all non-main worktrees deleted and main worktree clean)
 - `mitra worktree add [repo-id] [branch[:parent-branch]]` (aliases: `w a`, `wt a`) - Create a new worktree (interactive TUI if no args)
 - `mitra worktree list [repo-id]` (aliases: `w l`, `w ls`) - List worktrees (TOML format)
 - `mitra worktree delete [worktree-id]` (aliases: `w d`, `w del`, `w rm`) - Delete a worktree (interactive TUI if no args, requires worktree to be clean)

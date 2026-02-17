@@ -9,6 +9,7 @@ import (
 
 	"mitra/internal/proto"
 	"mitra/internal/storage"
+	"mitra/internal/tui/selectors"
 )
 
 var repoCmd = &cobra.Command{
@@ -91,10 +92,10 @@ var repoListCmd = &cobra.Command{
 }
 
 var repoDeleteCmd = &cobra.Command{
-	Use:     "delete <repo-id>",
+	Use:     "delete [repo-id]",
 	Aliases: []string{"d", "del", "rm"},
 	Short:   "Delete a repository",
-	Args:    cobra.ExactArgs(1),
+	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		cc, err := newClient()
 		if err != nil {
@@ -102,7 +103,23 @@ var repoDeleteCmd = &cobra.Command{
 		}
 		defer cc.Close()
 
-		repoID := args[0]
+		var repoID string
+
+		if len(args) == 0 {
+			listResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list repos")
+			}
+
+			selectedRepo, err := selectors.SelectRepo(listResp.Repos)
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to select repo")
+			}
+
+			repoID = selectedRepo.Id
+		} else {
+			repoID = args[0]
+		}
 
 		resp, err := cc.Client.DeleteRepo(cc.Ctx, &proto.DeleteRepoRequest{
 			RepoId: repoID,
