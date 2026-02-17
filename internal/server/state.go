@@ -143,6 +143,24 @@ func (s *State) CheckRepoExists(host, owner, repo string) *proto.Repo {
 	return nil
 }
 
+// DeleteRepo removes a repo from state
+func (s *State) DeleteRepo(repoID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for i, repo := range s.repos {
+		if repo.Id == repoID {
+			s.repos = append(s.repos[:i], s.repos[i+1:]...)
+			if err := storage.SaveRepos(s.repos); err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	return fmt.Errorf("repo not found: %s", repoID)
+}
+
 // AddWorktree adds a new worktree
 func (s *State) AddWorktree(worktree *proto.Worktree) error {
 	s.mu.Lock()

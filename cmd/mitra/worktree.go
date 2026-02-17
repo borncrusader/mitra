@@ -176,7 +176,9 @@ var worktreeDeleteCmd = &cobra.Command{
 		}
 
 		if resp.Success {
-			log.Info().Str("worktree_id", worktreeID).Msg("worktree deleted")
+			log.Info().Str("worktree_id", worktreeID).Msg(resp.Message)
+		} else {
+			log.Error().Str("worktree_id", worktreeID).Msg(resp.Message)
 		}
 	},
 }

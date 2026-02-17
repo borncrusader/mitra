@@ -90,8 +90,38 @@ var repoListCmd = &cobra.Command{
 	},
 }
 
+var repoDeleteCmd = &cobra.Command{
+	Use:     "delete <repo-id>",
+	Aliases: []string{"d", "del", "rm"},
+	Short:   "Delete a repository",
+	Args:    cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		cc, err := newClient()
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to create client")
+		}
+		defer cc.Close()
+
+		repoID := args[0]
+
+		resp, err := cc.Client.DeleteRepo(cc.Ctx, &proto.DeleteRepoRequest{
+			RepoId: repoID,
+		})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to delete repo")
+		}
+
+		if resp.Success {
+			log.Info().Str("repo_id", repoID).Msg(resp.Message)
+		} else {
+			log.Error().Str("repo_id", repoID).Msg(resp.Message)
+		}
+	},
+}
+
 func init() {
 	repoCmd.AddCommand(repoAddCmd)
 	repoCmd.AddCommand(repoListCmd)
+	repoCmd.AddCommand(repoDeleteCmd)
 	rootCmd.AddCommand(repoCmd)
 }

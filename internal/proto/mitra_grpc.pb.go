@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	MitraService_ListRepos_FullMethodName      = "/proto.MitraService/ListRepos"
 	MitraService_AddRepo_FullMethodName        = "/proto.MitraService/AddRepo"
+	MitraService_DeleteRepo_FullMethodName     = "/proto.MitraService/DeleteRepo"
 	MitraService_AddWorktree_FullMethodName    = "/proto.MitraService/AddWorktree"
 	MitraService_ListWorktrees_FullMethodName  = "/proto.MitraService/ListWorktrees"
 	MitraService_DeleteWorktree_FullMethodName = "/proto.MitraService/DeleteWorktree"
@@ -34,6 +35,7 @@ const (
 type MitraServiceClient interface {
 	ListRepos(ctx context.Context, in *ListReposRequest, opts ...grpc.CallOption) (*ListReposResponse, error)
 	AddRepo(ctx context.Context, in *AddRepoRequest, opts ...grpc.CallOption) (*AddRepoResponse, error)
+	DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error)
 	AddWorktree(ctx context.Context, in *AddWorktreeRequest, opts ...grpc.CallOption) (*AddWorktreeResponse, error)
 	ListWorktrees(ctx context.Context, in *ListWorktreesRequest, opts ...grpc.CallOption) (*ListWorktreesResponse, error)
 	DeleteWorktree(ctx context.Context, in *DeleteWorktreeRequest, opts ...grpc.CallOption) (*DeleteWorktreeResponse, error)
@@ -63,6 +65,16 @@ func (c *mitraServiceClient) AddRepo(ctx context.Context, in *AddRepoRequest, op
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AddRepoResponse)
 	err := c.cc.Invoke(ctx, MitraService_AddRepo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mitraServiceClient) DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteRepoResponse)
+	err := c.cc.Invoke(ctx, MitraService_DeleteRepo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -125,6 +137,7 @@ func (c *mitraServiceClient) GetSession(ctx context.Context, in *GetSessionReque
 type MitraServiceServer interface {
 	ListRepos(context.Context, *ListReposRequest) (*ListReposResponse, error)
 	AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error)
+	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
 	AddWorktree(context.Context, *AddWorktreeRequest) (*AddWorktreeResponse, error)
 	ListWorktrees(context.Context, *ListWorktreesRequest) (*ListWorktreesResponse, error)
 	DeleteWorktree(context.Context, *DeleteWorktreeRequest) (*DeleteWorktreeResponse, error)
@@ -145,6 +158,9 @@ func (UnimplementedMitraServiceServer) ListRepos(context.Context, *ListReposRequ
 }
 func (UnimplementedMitraServiceServer) AddRepo(context.Context, *AddRepoRequest) (*AddRepoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddRepo not implemented")
+}
+func (UnimplementedMitraServiceServer) DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteRepo not implemented")
 }
 func (UnimplementedMitraServiceServer) AddWorktree(context.Context, *AddWorktreeRequest) (*AddWorktreeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddWorktree not implemented")
@@ -214,6 +230,24 @@ func _MitraService_AddRepo_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MitraServiceServer).AddRepo(ctx, req.(*AddRepoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MitraService_DeleteRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRepoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MitraServiceServer).DeleteRepo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MitraService_DeleteRepo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MitraServiceServer).DeleteRepo(ctx, req.(*DeleteRepoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -322,6 +356,10 @@ var MitraService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddRepo",
 			Handler:    _MitraService_AddRepo_Handler,
+		},
+		{
+			MethodName: "DeleteRepo",
+			Handler:    _MitraService_DeleteRepo_Handler,
 		},
 		{
 			MethodName: "AddWorktree",

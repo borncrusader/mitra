@@ -127,6 +127,27 @@ func (cmd *deleteWorktreeCmd) Execute(w *RepoWatcher) error {
 		return err
 	}
 
+	// Check if worktree is clean before deletion
+	repo := w.service.state.FindRepoByID(worktreeToDelete.RepoId)
+	if repo == nil {
+		err := fmt.Errorf("repo not found for worktree")
+		cmd.responseChan <- err
+		return err
+	}
+
+	isClean, reason, err := git.IsClean(worktreeToDelete.Path, repo.MainBranch)
+	if err != nil {
+		err := fmt.Errorf("failed to check if worktree is clean: %w", err)
+		cmd.responseChan <- err
+		return err
+	}
+
+	if !isClean {
+		err := fmt.Errorf("worktree is not clean: %s", reason)
+		cmd.responseChan <- err
+		return err
+	}
+
 	w.logger.Info().
 		Str("worktree_id", cmd.worktreeID).
 		Str("branch", worktreeToDelete.Branch).

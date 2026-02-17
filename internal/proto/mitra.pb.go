@@ -417,6 +417,102 @@ func (x *AddRepoResponse) GetRepo() *Repo {
 	return nil
 }
 
+type DeleteRepoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepoRequest) Reset() {
+	*x = DeleteRepoRequest{}
+	mi := &file_internal_proto_mitra_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepoRequest) ProtoMessage() {}
+
+func (x *DeleteRepoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_mitra_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepoRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRepoRequest) Descriptor() ([]byte, []int) {
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DeleteRepoRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+type DeleteRepoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepoResponse) Reset() {
+	*x = DeleteRepoResponse{}
+	mi := &file_internal_proto_mitra_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepoResponse) ProtoMessage() {}
+
+func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_mitra_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepoResponse.ProtoReflect.Descriptor instead.
+func (*DeleteRepoResponse) Descriptor() ([]byte, []int) {
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DeleteRepoResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteRepoResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type AddWorktreeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
@@ -428,7 +524,7 @@ type AddWorktreeRequest struct {
 
 func (x *AddWorktreeRequest) Reset() {
 	*x = AddWorktreeRequest{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[7]
+	mi := &file_internal_proto_mitra_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -440,7 +536,7 @@ func (x *AddWorktreeRequest) String() string {
 func (*AddWorktreeRequest) ProtoMessage() {}
 
 func (x *AddWorktreeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[7]
+	mi := &file_internal_proto_mitra_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -453,7 +549,7 @@ func (x *AddWorktreeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddWorktreeRequest.ProtoReflect.Descriptor instead.
 func (*AddWorktreeRequest) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{7}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *AddWorktreeRequest) GetRepoId() string {
@@ -486,7 +582,7 @@ type AddWorktreeResponse struct {
 
 func (x *AddWorktreeResponse) Reset() {
 	*x = AddWorktreeResponse{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[8]
+	mi := &file_internal_proto_mitra_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -498,7 +594,7 @@ func (x *AddWorktreeResponse) String() string {
 func (*AddWorktreeResponse) ProtoMessage() {}
 
 func (x *AddWorktreeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[8]
+	mi := &file_internal_proto_mitra_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -511,7 +607,7 @@ func (x *AddWorktreeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddWorktreeResponse.ProtoReflect.Descriptor instead.
 func (*AddWorktreeResponse) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{8}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *AddWorktreeResponse) GetWorktree() *Worktree {
@@ -530,7 +626,7 @@ type ListWorktreesRequest struct {
 
 func (x *ListWorktreesRequest) Reset() {
 	*x = ListWorktreesRequest{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[9]
+	mi := &file_internal_proto_mitra_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -542,7 +638,7 @@ func (x *ListWorktreesRequest) String() string {
 func (*ListWorktreesRequest) ProtoMessage() {}
 
 func (x *ListWorktreesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[9]
+	mi := &file_internal_proto_mitra_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -555,7 +651,7 @@ func (x *ListWorktreesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorktreesRequest.ProtoReflect.Descriptor instead.
 func (*ListWorktreesRequest) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{9}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListWorktreesRequest) GetRepoId() string {
@@ -574,7 +670,7 @@ type ListWorktreesResponse struct {
 
 func (x *ListWorktreesResponse) Reset() {
 	*x = ListWorktreesResponse{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[10]
+	mi := &file_internal_proto_mitra_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -586,7 +682,7 @@ func (x *ListWorktreesResponse) String() string {
 func (*ListWorktreesResponse) ProtoMessage() {}
 
 func (x *ListWorktreesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[10]
+	mi := &file_internal_proto_mitra_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -599,7 +695,7 @@ func (x *ListWorktreesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorktreesResponse.ProtoReflect.Descriptor instead.
 func (*ListWorktreesResponse) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{10}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListWorktreesResponse) GetWorktrees() []*Worktree {
@@ -618,7 +714,7 @@ type DeleteWorktreeRequest struct {
 
 func (x *DeleteWorktreeRequest) Reset() {
 	*x = DeleteWorktreeRequest{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[11]
+	mi := &file_internal_proto_mitra_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -630,7 +726,7 @@ func (x *DeleteWorktreeRequest) String() string {
 func (*DeleteWorktreeRequest) ProtoMessage() {}
 
 func (x *DeleteWorktreeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[11]
+	mi := &file_internal_proto_mitra_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -643,7 +739,7 @@ func (x *DeleteWorktreeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWorktreeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteWorktreeRequest) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{11}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DeleteWorktreeRequest) GetWorktreeId() string {
@@ -656,13 +752,14 @@ func (x *DeleteWorktreeRequest) GetWorktreeId() string {
 type DeleteWorktreeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteWorktreeResponse) Reset() {
 	*x = DeleteWorktreeResponse{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[12]
+	mi := &file_internal_proto_mitra_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -674,7 +771,7 @@ func (x *DeleteWorktreeResponse) String() string {
 func (*DeleteWorktreeResponse) ProtoMessage() {}
 
 func (x *DeleteWorktreeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[12]
+	mi := &file_internal_proto_mitra_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -687,7 +784,7 @@ func (x *DeleteWorktreeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWorktreeResponse.ProtoReflect.Descriptor instead.
 func (*DeleteWorktreeResponse) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{12}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeleteWorktreeResponse) GetSuccess() bool {
@@ -695,6 +792,13 @@ func (x *DeleteWorktreeResponse) GetSuccess() bool {
 		return x.Success
 	}
 	return false
+}
+
+func (x *DeleteWorktreeResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
 }
 
 type ListSessionsRequest struct {
@@ -705,7 +809,7 @@ type ListSessionsRequest struct {
 
 func (x *ListSessionsRequest) Reset() {
 	*x = ListSessionsRequest{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[13]
+	mi := &file_internal_proto_mitra_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -717,7 +821,7 @@ func (x *ListSessionsRequest) String() string {
 func (*ListSessionsRequest) ProtoMessage() {}
 
 func (x *ListSessionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[13]
+	mi := &file_internal_proto_mitra_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -730,7 +834,7 @@ func (x *ListSessionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSessionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSessionsRequest) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{13}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{15}
 }
 
 type ListSessionsResponse struct {
@@ -742,7 +846,7 @@ type ListSessionsResponse struct {
 
 func (x *ListSessionsResponse) Reset() {
 	*x = ListSessionsResponse{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[14]
+	mi := &file_internal_proto_mitra_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -754,7 +858,7 @@ func (x *ListSessionsResponse) String() string {
 func (*ListSessionsResponse) ProtoMessage() {}
 
 func (x *ListSessionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[14]
+	mi := &file_internal_proto_mitra_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -767,7 +871,7 @@ func (x *ListSessionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSessionsResponse.ProtoReflect.Descriptor instead.
 func (*ListSessionsResponse) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{14}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListSessionsResponse) GetSessions() []*Session {
@@ -786,7 +890,7 @@ type GetSessionRequest struct {
 
 func (x *GetSessionRequest) Reset() {
 	*x = GetSessionRequest{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[15]
+	mi := &file_internal_proto_mitra_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -798,7 +902,7 @@ func (x *GetSessionRequest) String() string {
 func (*GetSessionRequest) ProtoMessage() {}
 
 func (x *GetSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[15]
+	mi := &file_internal_proto_mitra_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -811,7 +915,7 @@ func (x *GetSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSessionRequest.ProtoReflect.Descriptor instead.
 func (*GetSessionRequest) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{15}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetSessionRequest) GetSessionId() string {
@@ -830,7 +934,7 @@ type GetSessionResponse struct {
 
 func (x *GetSessionResponse) Reset() {
 	*x = GetSessionResponse{}
-	mi := &file_internal_proto_mitra_proto_msgTypes[16]
+	mi := &file_internal_proto_mitra_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -842,7 +946,7 @@ func (x *GetSessionResponse) String() string {
 func (*GetSessionResponse) ProtoMessage() {}
 
 func (x *GetSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_proto_mitra_proto_msgTypes[16]
+	mi := &file_internal_proto_mitra_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -855,7 +959,7 @@ func (x *GetSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSessionResponse.ProtoReflect.Descriptor instead.
 func (*GetSessionResponse) Descriptor() ([]byte, []int) {
-	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{16}
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetSessionResponse) GetSession() *Session {
@@ -897,7 +1001,12 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x0eAddRepoRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\"2\n" +
 	"\x0fAddRepoResponse\x12\x1f\n" +
-	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"\x91\x01\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\",\n" +
+	"\x11DeleteRepoRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"H\n" +
+	"\x12DeleteRepoResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x91\x01\n" +
 	"\x12AddWorktreeRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1b\n" +
 	"\x06branch\x18\x02 \x01(\tH\x00R\x06branch\x88\x01\x01\x12(\n" +
@@ -912,9 +1021,10 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees\"8\n" +
 	"\x15DeleteWorktreeRequest\x12\x1f\n" +
 	"\vworktree_id\x18\x01 \x01(\tR\n" +
-	"worktreeId\"2\n" +
+	"worktreeId\"L\n" +
 	"\x16DeleteWorktreeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x15\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x15\n" +
 	"\x13ListSessionsRequest\"B\n" +
 	"\x14ListSessionsResponse\x12*\n" +
 	"\bsessions\x18\x01 \x03(\v2\x0e.proto.SessionR\bsessions\"2\n" +
@@ -922,10 +1032,12 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\">\n" +
 	"\x12GetSessionResponse\x12(\n" +
-	"\asession\x18\x01 \x01(\v2\x0e.proto.SessionR\asession2\xf5\x03\n" +
+	"\asession\x18\x01 \x01(\v2\x0e.proto.SessionR\asession2\xb8\x04\n" +
 	"\fMitraService\x12>\n" +
 	"\tListRepos\x12\x17.proto.ListReposRequest\x1a\x18.proto.ListReposResponse\x128\n" +
-	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponse\x12D\n" +
+	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponse\x12A\n" +
+	"\n" +
+	"DeleteRepo\x12\x18.proto.DeleteRepoRequest\x1a\x19.proto.DeleteRepoResponse\x12D\n" +
 	"\vAddWorktree\x12\x19.proto.AddWorktreeRequest\x1a\x1a.proto.AddWorktreeResponse\x12J\n" +
 	"\rListWorktrees\x12\x1b.proto.ListWorktreesRequest\x1a\x1c.proto.ListWorktreesResponse\x12M\n" +
 	"\x0eDeleteWorktree\x12\x1c.proto.DeleteWorktreeRequest\x1a\x1d.proto.DeleteWorktreeResponse\x12G\n" +
@@ -945,7 +1057,7 @@ func file_internal_proto_mitra_proto_rawDescGZIP() []byte {
 	return file_internal_proto_mitra_proto_rawDescData
 }
 
-var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_internal_proto_mitra_proto_goTypes = []any{
 	(*Repo)(nil),                   // 0: proto.Repo
 	(*Worktree)(nil),               // 1: proto.Worktree
@@ -954,16 +1066,18 @@ var file_internal_proto_mitra_proto_goTypes = []any{
 	(*ListReposResponse)(nil),      // 4: proto.ListReposResponse
 	(*AddRepoRequest)(nil),         // 5: proto.AddRepoRequest
 	(*AddRepoResponse)(nil),        // 6: proto.AddRepoResponse
-	(*AddWorktreeRequest)(nil),     // 7: proto.AddWorktreeRequest
-	(*AddWorktreeResponse)(nil),    // 8: proto.AddWorktreeResponse
-	(*ListWorktreesRequest)(nil),   // 9: proto.ListWorktreesRequest
-	(*ListWorktreesResponse)(nil),  // 10: proto.ListWorktreesResponse
-	(*DeleteWorktreeRequest)(nil),  // 11: proto.DeleteWorktreeRequest
-	(*DeleteWorktreeResponse)(nil), // 12: proto.DeleteWorktreeResponse
-	(*ListSessionsRequest)(nil),    // 13: proto.ListSessionsRequest
-	(*ListSessionsResponse)(nil),   // 14: proto.ListSessionsResponse
-	(*GetSessionRequest)(nil),      // 15: proto.GetSessionRequest
-	(*GetSessionResponse)(nil),     // 16: proto.GetSessionResponse
+	(*DeleteRepoRequest)(nil),      // 7: proto.DeleteRepoRequest
+	(*DeleteRepoResponse)(nil),     // 8: proto.DeleteRepoResponse
+	(*AddWorktreeRequest)(nil),     // 9: proto.AddWorktreeRequest
+	(*AddWorktreeResponse)(nil),    // 10: proto.AddWorktreeResponse
+	(*ListWorktreesRequest)(nil),   // 11: proto.ListWorktreesRequest
+	(*ListWorktreesResponse)(nil),  // 12: proto.ListWorktreesResponse
+	(*DeleteWorktreeRequest)(nil),  // 13: proto.DeleteWorktreeRequest
+	(*DeleteWorktreeResponse)(nil), // 14: proto.DeleteWorktreeResponse
+	(*ListSessionsRequest)(nil),    // 15: proto.ListSessionsRequest
+	(*ListSessionsResponse)(nil),   // 16: proto.ListSessionsResponse
+	(*GetSessionRequest)(nil),      // 17: proto.GetSessionRequest
+	(*GetSessionResponse)(nil),     // 18: proto.GetSessionResponse
 }
 var file_internal_proto_mitra_proto_depIdxs = []int32{
 	0,  // 0: proto.ListReposResponse.repos:type_name -> proto.Repo
@@ -974,20 +1088,22 @@ var file_internal_proto_mitra_proto_depIdxs = []int32{
 	2,  // 5: proto.GetSessionResponse.session:type_name -> proto.Session
 	3,  // 6: proto.MitraService.ListRepos:input_type -> proto.ListReposRequest
 	5,  // 7: proto.MitraService.AddRepo:input_type -> proto.AddRepoRequest
-	7,  // 8: proto.MitraService.AddWorktree:input_type -> proto.AddWorktreeRequest
-	9,  // 9: proto.MitraService.ListWorktrees:input_type -> proto.ListWorktreesRequest
-	11, // 10: proto.MitraService.DeleteWorktree:input_type -> proto.DeleteWorktreeRequest
-	13, // 11: proto.MitraService.ListSessions:input_type -> proto.ListSessionsRequest
-	15, // 12: proto.MitraService.GetSession:input_type -> proto.GetSessionRequest
-	4,  // 13: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
-	6,  // 14: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
-	8,  // 15: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
-	10, // 16: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
-	12, // 17: proto.MitraService.DeleteWorktree:output_type -> proto.DeleteWorktreeResponse
-	14, // 18: proto.MitraService.ListSessions:output_type -> proto.ListSessionsResponse
-	16, // 19: proto.MitraService.GetSession:output_type -> proto.GetSessionResponse
-	13, // [13:20] is the sub-list for method output_type
-	6,  // [6:13] is the sub-list for method input_type
+	7,  // 8: proto.MitraService.DeleteRepo:input_type -> proto.DeleteRepoRequest
+	9,  // 9: proto.MitraService.AddWorktree:input_type -> proto.AddWorktreeRequest
+	11, // 10: proto.MitraService.ListWorktrees:input_type -> proto.ListWorktreesRequest
+	13, // 11: proto.MitraService.DeleteWorktree:input_type -> proto.DeleteWorktreeRequest
+	15, // 12: proto.MitraService.ListSessions:input_type -> proto.ListSessionsRequest
+	17, // 13: proto.MitraService.GetSession:input_type -> proto.GetSessionRequest
+	4,  // 14: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
+	6,  // 15: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
+	8,  // 16: proto.MitraService.DeleteRepo:output_type -> proto.DeleteRepoResponse
+	10, // 17: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
+	12, // 18: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
+	14, // 19: proto.MitraService.DeleteWorktree:output_type -> proto.DeleteWorktreeResponse
+	16, // 20: proto.MitraService.ListSessions:output_type -> proto.ListSessionsResponse
+	18, // 21: proto.MitraService.GetSession:output_type -> proto.GetSessionResponse
+	14, // [14:22] is the sub-list for method output_type
+	6,  // [6:14] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name
@@ -999,14 +1115,14 @@ func file_internal_proto_mitra_proto_init() {
 		return
 	}
 	file_internal_proto_mitra_proto_msgTypes[1].OneofWrappers = []any{}
-	file_internal_proto_mitra_proto_msgTypes[7].OneofWrappers = []any{}
+	file_internal_proto_mitra_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_proto_mitra_proto_rawDesc), len(file_internal_proto_mitra_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

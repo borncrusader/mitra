@@ -168,6 +168,96 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 	}, nil
 }
 
+func (s *MitraServiceServer) DeleteRepo(ctx context.Context, req *proto.DeleteRepoRequest) (*proto.DeleteRepoResponse, error) {
+	repo := s.state.FindRepoByID(req.RepoId)
+	if repo == nil {
+		return &proto.DeleteRepoResponse{
+			Success: false,
+			Message: fmt.Sprintf("repo not found: %s", req.RepoId),
+		}, nil
+	}
+
+	// Check that all non-main worktrees are deleted
+	worktrees := s.state.GetWorktrees(req.RepoId)
+	hasNonMainWorktrees := false
+	var mainWorktree *proto.Worktree
+
+	for _, wt := range worktrees {
+		if wt.IsMain {
+			mainWorktree = wt
+		} else {
+			hasNonMainWorktrees = true
+		}
+	}
+
+	if hasNonMainWorktrees {
+		return &proto.DeleteRepoResponse{
+			Success: false,
+			Message: "cannot delete repo: non-main worktrees still exist, delete them first",
+		}, nil
+	}
+
+	// Check that main worktree is clean
+	if mainWorktree != nil {
+		isClean, reason, err := git.IsClean(mainWorktree.Path, repo.MainBranch)
+		if err != nil {
+			return &proto.DeleteRepoResponse{
+				Success: false,
+				Message: fmt.Sprintf("failed to check if main worktree is clean: %v", err),
+			}, nil
+		}
+
+		if !isClean {
+			return &proto.DeleteRepoResponse{
+				Success: false,
+				Message: fmt.Sprintf("cannot delete repo: main worktree is not clean (%s)", reason),
+			}, nil
+		}
+	}
+
+	// Stop the watcher
+	s.mu.Lock()
+	delete(s.watchers, req.RepoId)
+	s.mu.Unlock()
+
+	// Delete repo directory
+	repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
+	if err := os.RemoveAll(repoDir); err != nil {
+		return &proto.DeleteRepoResponse{
+			Success: false,
+			Message: fmt.Sprintf("failed to delete repo directory: %v", err),
+		}, nil
+	}
+
+	// Delete all worktrees from state
+	for _, wt := range worktrees {
+		if _, index := s.state.FindWorktreeByID(wt.Id); index != -1 {
+			if err := s.state.DeleteWorktree(index); err != nil {
+				s.logger.Warn().Err(err).Str("worktree_id", wt.Id).Msg("failed to delete worktree from state")
+			}
+		}
+	}
+
+	// Delete repo from state
+	if err := s.state.DeleteRepo(req.RepoId); err != nil {
+		return &proto.DeleteRepoResponse{
+			Success: false,
+			Message: fmt.Sprintf("failed to delete repo from state: %v", err),
+		}, nil
+	}
+
+	s.logger.Info().
+		Str("repo_id", req.RepoId).
+		Str("owner", repo.Owner).
+		Str("repo", repo.Repo).
+		Msg("repo deleted successfully")
+
+	return &proto.DeleteRepoResponse{
+		Success: true,
+		Message: "repo deleted successfully",
+	}, nil
+}
+
 func (s *MitraServiceServer) ListWorktrees(ctx context.Context, req *proto.ListWorktreesRequest) (*proto.ListWorktreesResponse, error) {
 	return &proto.ListWorktreesResponse{
 		Worktrees: s.state.GetWorktrees(req.RepoId),
@@ -275,11 +365,15 @@ func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.Dele
 
 	err := <-responseChan
 	if err != nil {
-		return nil, err
+		return &proto.DeleteWorktreeResponse{
+			Success: false,
+			Message: err.Error(),
+		}, nil
 	}
 
 	return &proto.DeleteWorktreeResponse{
 		Success: true,
+		Message: "worktree deleted successfully",
 	}, nil
 }
 
