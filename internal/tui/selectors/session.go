@@ -8,25 +8,49 @@ import (
 	"mitra/internal/proto"
 )
 
-func SelectSession(sessions []*proto.Session) (*proto.Session, error) {
+func SelectSession(sessions []*proto.Session, worktrees []*proto.Worktree, repos []*proto.Repo) (*proto.Session, error) {
 	if len(sessions) == 0 {
 		return nil, fmt.Errorf("no sessions found")
 	}
 
+	// Create lookup maps
+	worktreeMap := make(map[string]*proto.Worktree)
+	for _, wt := range worktrees {
+		worktreeMap[wt.Id] = wt
+	}
+
+	repoMap := make(map[string]*proto.Repo)
+	for _, r := range repos {
+		repoMap[r.Id] = r
+	}
+
 	// Build table columns
 	columns := []table.Column{
-		{Title: "Session ID", Width: 20},
+		{Title: "Repository", Width: 40},
+		{Title: "Branch", Width: 30},
 		{Title: "Worktree ID", Width: 20},
-		{Title: "Name", Width: 60},
 	}
 
 	// Build table rows
 	rows := []table.Row{}
 	for _, session := range sessions {
+		worktree := worktreeMap[session.WorktreeId]
+
+		repoPath := "unknown"
+		branch := "unknown"
+
+		if worktree != nil {
+			branch = worktree.Branch
+			repo := repoMap[worktree.RepoId]
+			if repo != nil {
+				repoPath = fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
+			}
+		}
+
 		rows = append(rows, table.Row{
-			session.Id,
+			repoPath,
+			branch,
 			session.WorktreeId,
-			session.Name,
 		})
 	}
 

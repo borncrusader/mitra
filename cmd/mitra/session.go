@@ -81,12 +81,22 @@ var sessionAttachCmd = &cobra.Command{
 		var sessionID string
 
 		if len(args) == 0 {
-			listResp, err := cc.Client.ListSessions(cc.Ctx, &proto.ListSessionsRequest{})
+			sessionsResp, err := cc.Client.ListSessions(cc.Ctx, &proto.ListSessionsRequest{})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to list sessions")
 			}
 
-			selectedSession, err := selectors.SelectSession(listResp.Sessions)
+			worktreesResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list worktrees")
+			}
+
+			reposResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to list repos")
+			}
+
+			selectedSession, err := selectors.SelectSession(sessionsResp.Sessions, worktreesResp.Worktrees, reposResp.Repos)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to select session")
 			}
