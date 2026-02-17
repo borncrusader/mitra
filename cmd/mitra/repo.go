@@ -57,29 +57,43 @@ var repoListCmd = &cobra.Command{
 		}
 		defer cc.Close()
 
-		resp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
+		reposResp, err := cc.Client.ListRepos(cc.Ctx, &proto.ListReposRequest{})
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to list repos")
 		}
 
-		if len(resp.Repos) == 0 {
+		if len(reposResp.Repos) == 0 {
 			fmt.Println("No repositories found.")
 			return
+		}
+
+		worktreesResp, err := cc.Client.ListWorktrees(cc.Ctx, &proto.ListWorktreesRequest{})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to list worktrees")
+		}
+
+		// Count worktrees per repo
+		worktreeCounts := make(map[string]int)
+		for _, wt := range worktreesResp.Worktrees {
+			worktreeCounts[wt.RepoId]++
 		}
 
 		// Build table columns
 		columns := []table.Column{
 			{Title: "Repo ID", Width: 20},
 			{Title: "Repository", Width: 50},
+			{Title: "Worktrees", Width: 10},
 		}
 
 		// Build table rows
 		rows := []table.Row{}
-		for _, repo := range resp.Repos {
+		for _, repo := range reposResp.Repos {
 			repoPath := fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
+			count := worktreeCounts[repo.Id]
 			rows = append(rows, table.Row{
 				repo.Id,
 				repoPath,
+				fmt.Sprintf("%d", count),
 			})
 		}
 
