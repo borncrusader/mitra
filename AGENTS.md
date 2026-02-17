@@ -63,7 +63,8 @@ Location: `~/.mitra/`
 - Format: `host/owner/repo` (e.g., `github.com/owner/repo`)
 - Supports: GitHub, GitLab, Bitbucket, custom git hosts
 - URL formats: `https://host/owner/repo`, `host/owner/repo`, `git@host:owner/repo`
-- CLI: `mitra repo add <url>`, `mitra repo list`
+- Delete safety: Cannot delete if non-main worktrees exist or main worktree is not clean
+- CLI: `mitra repo add <url>`, `mitra repo list`, `mitra repo delete <repo-id>`
 
 # Worktrees
 - Automatically creates main/master worktree when repo is added
@@ -71,7 +72,8 @@ Location: `~/.mitra/`
 - Interactive mode: `mitra worktree add` (no arguments) shows TUI to select repo
 - Delete worktrees with `mitra worktree delete [worktree-id]`
 - Interactive delete: `mitra worktree delete` (no arguments) shows TUI to select worktree
-- Protection: Cannot delete main worktrees
+- Protection: Cannot delete main worktrees or worktrees that are not clean
+- Clean checks: No uncommitted changes, stashes, merge/rebase in progress, unpushed commits, etc.
 - Branch prefix: All branches created with configured prefix (default: `$USER/`)
 - Branch syntax:
   - Omit branch: uses generated ID as branch name, main as parent
@@ -117,9 +119,10 @@ Use "mitra [command] --help" for more information about a command.
 - `mitra config generate` (aliases: `c g`, `c gen`) - Generate default config file
 - `mitra repo add <url>` (aliases: `r a`) - Add a repository
 - `mitra repo list` (aliases: `r l`, `r ls`) - List repos (TOML format)
+- `mitra repo delete <repo-id>` (aliases: `r d`, `r del`, `r rm`) - Delete a repository (requires all non-main worktrees deleted and main worktree clean)
 - `mitra worktree add [repo-id] [branch[:parent-branch]]` (aliases: `w a`, `wt a`) - Create a new worktree (interactive TUI if no args)
 - `mitra worktree list [repo-id]` (aliases: `w l`, `w ls`) - List worktrees (TOML format)
-- `mitra worktree delete [worktree-id]` (aliases: `w d`, `w del`, `w rm`) - Delete a worktree (interactive TUI if no args)
+- `mitra worktree delete [worktree-id]` (aliases: `w d`, `w del`, `w rm`) - Delete a worktree (interactive TUI if no args, requires worktree to be clean)
 - `mitra session list` (aliases: `s l`, `s ls`, `sess l`) - List all tmux sessions (TOML format)
 - `mitra session attach [session-id]` (aliases: `s a`, `s at`, `sess a`) - Attach to a tmux session (interactive TUI if no args)
 

@@ -42,6 +42,11 @@ All commands support short aliases for faster typing.
 ./bin/mitra repo list
 ./bin/mitra r l
 
+# Delete a repository (aliases: r d, r del, r rm)
+./bin/mitra repo delete <repo-id>
+./bin/mitra r d <repo-id>
+# Requires: all non-main worktrees deleted, main worktree clean
+
 # Create a worktree (interactive TUI if no args) (aliases: w a, wt a)
 ./bin/mitra worktree add [repo-id] [branch[:parent-branch]]
 ./bin/mitra w a [repo-id] [branch[:parent-branch]]
@@ -59,6 +64,7 @@ All commands support short aliases for faster typing.
 # Delete a worktree (interactive TUI if no args) (aliases: w d, w del, w rm)
 ./bin/mitra worktree delete [worktree-id]
 ./bin/mitra w d [worktree-id]
+# Requires: worktree must be clean (no uncommitted changes, stashes, etc.)
 # Examples:
 #   mitra w d                                # interactive worktree selection
 #   mitra w d worktree-id-123                # delete specific worktree
