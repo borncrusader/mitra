@@ -10,18 +10,18 @@ import (
 type DirtyReason string
 
 const (
-	DirtyReasonClean              DirtyReason = ""
-	DirtyReasonUncommittedChanges DirtyReason = "uncommitted_changes"
-	DirtyReasonUntrackedFiles     DirtyReason = "untracked_files"
-	DirtyReasonStashedChanges     DirtyReason = "stashed_changes"
-	DirtyReasonMergeInProgress    DirtyReason = "merge_in_progress"
-	DirtyReasonRebaseInProgress   DirtyReason = "rebase_in_progress"
-	DirtyReasonCherryPickInProgress DirtyReason = "cherry_pick_in_progress"
-	DirtyReasonRevertInProgress   DirtyReason = "revert_in_progress"
-	DirtyReasonBisectInProgress   DirtyReason = "bisect_in_progress"
-	DirtyReasonDetachedHead       DirtyReason = "detached_head"
-	DirtyReasonUnpushedCommits    DirtyReason = "unpushed_commits"
-	DirtyReasonUnmergedBranches   DirtyReason = "unmerged_branches"
+	DirtyReasonClean                  DirtyReason = ""
+	DirtyReasonUncommittedChanges     DirtyReason = "uncommitted_changes"
+	DirtyReasonUntrackedFiles         DirtyReason = "untracked_files"
+	DirtyReasonStashedChanges         DirtyReason = "stashed_changes"
+	DirtyReasonMergeInProgress        DirtyReason = "merge_in_progress"
+	DirtyReasonRebaseInProgress       DirtyReason = "rebase_in_progress"
+	DirtyReasonCherryPickInProgress   DirtyReason = "cherry_pick_in_progress"
+	DirtyReasonRevertInProgress       DirtyReason = "revert_in_progress"
+	DirtyReasonBisectInProgress       DirtyReason = "bisect_in_progress"
+	DirtyReasonDetachedHead           DirtyReason = "detached_head"
+	DirtyReasonUnpushedCommits        DirtyReason = "unpushed_commits"
+	DirtyReasonUnmergedBranches       DirtyReason = "unmerged_branches"
 	DirtyReasonCurrentBranchNotMerged DirtyReason = "current_branch_not_merged"
 )
 

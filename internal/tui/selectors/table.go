@@ -12,11 +12,11 @@ var baseStyle = lipgloss.NewStyle().
 
 // TableSelectorModel is a generic table selector for any data
 type TableSelectorModel struct {
-	table        table.Model
-	selectedIdx  int
-	quitting     bool
-	cancelled    bool
-	promptText   string
+	table       table.Model
+	selectedIdx int
+	quitting    bool
+	cancelled   bool
+	promptText  string
 }
 
 // NewTableSelector creates a new generic table selector
@@ -41,9 +41,9 @@ func NewTableSelector(columns []table.Column, rows []table.Row, promptText strin
 	t.SetStyles(s)
 
 	return TableSelectorModel{
-		table:      t,
+		table:       t,
 		selectedIdx: -1,
-		promptText: promptText,
+		promptText:  promptText,
 	}
 }
 
@@ -120,7 +120,8 @@ func RenderTable(columns []table.Column, rows []table.Row) string {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(false),
-		table.WithHeight(len(rows)),
+		// +1 to account for the header
+		table.WithHeight(len(rows)+1),
 	)
 
 	s := table.DefaultStyles()

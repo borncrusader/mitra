@@ -39,8 +39,8 @@ type AgentsConfig struct {
 }
 
 type ClaudeAgentConfig struct {
-	Enabled         bool `toml:"enabled"`
-	TrustByDefault  bool `toml:"trust_by_default"`
+	Enabled        bool `toml:"enabled"`
+	TrustByDefault bool `toml:"trust_by_default"`
 }
 
 func Default() *Config {
