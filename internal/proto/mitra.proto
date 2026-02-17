@@ -20,6 +20,7 @@ message Worktree {
   string path = 4;
   bool is_main = 5;
   optional string parent_branch = 6;
+  string status = 7;  // "Clean" or dirty reason (e.g., "uncommitted_changes")
 }
 
 message Session {

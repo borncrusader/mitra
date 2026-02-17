@@ -113,6 +113,7 @@ type Worktree struct {
 	Path          string                 `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
 	IsMain        bool                   `protobuf:"varint,5,opt,name=is_main,json=isMain,proto3" json:"is_main,omitempty"`
 	ParentBranch  *string                `protobuf:"bytes,6,opt,name=parent_branch,json=parentBranch,proto3,oneof" json:"parent_branch,omitempty"`
+	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"` // "Clean" or dirty reason (e.g., "uncommitted_changes")
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -185,6 +186,13 @@ func (x *Worktree) GetIsMain() bool {
 func (x *Worktree) GetParentBranch() string {
 	if x != nil && x.ParentBranch != nil {
 		return *x.ParentBranch
+	}
+	return ""
+}
+
+func (x *Worktree) GetStatus() string {
+	if x != nil {
+		return x.Status
 	}
 	return ""
 }
@@ -981,14 +989,15 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x05owner\x18\x04 \x01(\tR\x05owner\x12\x12\n" +
 	"\x04repo\x18\x05 \x01(\tR\x04repo\x12\x1f\n" +
 	"\vmain_branch\x18\x06 \x01(\tR\n" +
-	"mainBranch\"\xb4\x01\n" +
+	"mainBranch\"\xcc\x01\n" +
 	"\bWorktree\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x16\n" +
 	"\x06branch\x18\x03 \x01(\tR\x06branch\x12\x12\n" +
 	"\x04path\x18\x04 \x01(\tR\x04path\x12\x17\n" +
 	"\ais_main\x18\x05 \x01(\bR\x06isMain\x12(\n" +
-	"\rparent_branch\x18\x06 \x01(\tH\x00R\fparentBranch\x88\x01\x01B\x10\n" +
+	"\rparent_branch\x18\x06 \x01(\tH\x00R\fparentBranch\x88\x01\x01\x12\x16\n" +
+	"\x06status\x18\a \x01(\tR\x06statusB\x10\n" +
 	"\x0e_parent_branch\"N\n" +
 	"\aSession\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +

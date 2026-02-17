@@ -127,9 +127,10 @@ var worktreeListCmd = &cobra.Command{
 		// Build table columns
 		columns := []table.Column{
 			{Title: "Worktree ID", Width: 20},
-			{Title: "Repository", Width: 35},
-			{Title: "Branch", Width: 30},
-			{Title: "Parent Branch", Width: 20},
+			{Title: "Repository", Width: 30},
+			{Title: "Branch", Width: 25},
+			{Title: "Parent Branch", Width: 15},
+			{Title: "Status", Width: 20},
 		}
 
 		// Build table rows
@@ -151,6 +152,7 @@ var worktreeListCmd = &cobra.Command{
 				repoStr,
 				wt.Branch,
 				parentBranch,
+				wt.Status,
 			})
 		}
 

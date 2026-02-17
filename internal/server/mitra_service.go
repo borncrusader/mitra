@@ -259,8 +259,28 @@ func (s *MitraServiceServer) DeleteRepo(ctx context.Context, req *proto.DeleteRe
 }
 
 func (s *MitraServiceServer) ListWorktrees(ctx context.Context, req *proto.ListWorktreesRequest) (*proto.ListWorktreesResponse, error) {
+	worktrees := s.state.GetWorktrees(req.RepoId)
+
+	// Check clean status for each worktree
+	for _, wt := range worktrees {
+		repo := s.state.FindRepoByID(wt.RepoId)
+		if repo == nil {
+			wt.Status = "unknown"
+			continue
+		}
+
+		isClean, reason, err := git.IsClean(wt.Path, repo.MainBranch)
+		if err != nil {
+			wt.Status = "error"
+		} else if isClean {
+			wt.Status = "clean"
+		} else {
+			wt.Status = string(reason)
+		}
+	}
+
 	return &proto.ListWorktreesResponse{
-		Worktrees: s.state.GetWorktrees(req.RepoId),
+		Worktrees: worktrees,
 	}, nil
 }
 
