@@ -164,14 +164,13 @@ var worktreeListCmd = &cobra.Command{
 
 		// Build rows with section headers
 		for i, rc := range sortedRepos {
-			// Add section header
-			repoStr := fmt.Sprintf("━━━ %s/%s/%s (%d worktrees) ━━━",
-				rc.repo.Host, rc.repo.Owner, rc.repo.Repo, rc.count)
+			// Add section header spanning all columns
+			repoPath := fmt.Sprintf("%s/%s/%s", rc.repo.Host, rc.repo.Owner, rc.repo.Repo)
 			rows = append(rows, table.Row{
-				repoStr,
-				"",
-				"",
-				"",
+				"━━━━━━━━━━━━━━━━━━━━━",
+				fmt.Sprintf("Repository: %s", repoPath),
+				fmt.Sprintf("(%d worktrees)", rc.count),
+				"━━━━━━━━━━━━━━━━━━━━",
 			})
 
 			// Add worktrees for this repo
