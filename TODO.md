@@ -1,1 +1,3 @@
 - [ ] Add shell aliases automatically
+- [ ] mac menubar
+- [ ] repo doctor

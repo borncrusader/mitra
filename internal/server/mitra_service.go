@@ -71,7 +71,7 @@ func (s *MitraServiceServer) StartExistingWatchers() error {
 	for _, repo := range repos {
 		repoDir := filepath.Join(s.cfg.Repo.Dir, repo.Owner, repo.Repo)
 
-		watcher := NewRepoWatcher(s.logger, s.cfg, repo.Url, repo.Id, repo.Owner, repo.Repo, repo.MainBranch, repoDir, s)
+		watcher := NewRepoWatcher(s.logger, s.cfg, repo.Url, repo.Id, repo.Owner, repo.Repo, repoDir, repo.MainBranch, s)
 
 		s.mu.Lock()
 		s.watchers[repo.Id] = watcher
@@ -126,11 +126,12 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 	}
 
 	repo := &proto.Repo{
-		Id:    util.RandomName(),
-		Url:   req.Url,
-		Host:  host,
-		Owner: owner,
-		Repo:  repoName,
+		Id:         util.RandomName(),
+		Url:        req.Url,
+		Host:       host,
+		Owner:      owner,
+		Repo:       repoName,
+		MainBranch: mainBranch,
 	}
 
 	s.logger.Info().
@@ -150,7 +151,7 @@ func (s *MitraServiceServer) AddRepo(ctx context.Context, req *proto.AddRepoRequ
 		return nil, fmt.Errorf("failed to create repo directory: %w", err)
 	}
 
-	watcher := NewRepoWatcher(s.logger, s.cfg, req.Url, repo.Id, owner, repoName, mainBranch, repoDir, s)
+	watcher := NewRepoWatcher(s.logger, s.cfg, req.Url, repo.Id, owner, repoName, repoDir, mainBranch, s)
 
 	s.mu.Lock()
 	s.watchers[repo.Id] = watcher

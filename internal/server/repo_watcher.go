@@ -106,7 +106,7 @@ func (w *RepoWatcher) Watch(ctx context.Context) {
 					Msg("command execution failed")
 			}
 		case <-ticker.C:
-			isClean, reason, err := git.IsClean(cloneDir)
+			isClean, reason, err := git.IsClean(cloneDir, w.mainBranch)
 			if err != nil {
 				w.logger.Warn().
 					Err(err).

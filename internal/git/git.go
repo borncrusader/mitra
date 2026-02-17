@@ -76,7 +76,7 @@ func Clone(repoURL, targetDir, branch string) error {
 	return cmd.Run()
 }
 
-func IsClean(repoPath string) (bool, DirtyReason, error) {
+func IsClean(repoPath string, mainBranch string) (bool, DirtyReason, error) {
 	// Check for uncommitted and untracked changes
 	cmd := exec.Command("git", "-C", repoPath, "status", "--porcelain")
 	output, err := cmd.Output()
@@ -139,13 +139,6 @@ func IsClean(repoPath string) (bool, DirtyReason, error) {
 		return false, DirtyReasonDetachedHead, nil
 	}
 
-	// Determine default branch (main or master)
-	defaultBranch := "main"
-	cmd = exec.Command("git", "-C", repoPath, "rev-parse", "--verify", "main")
-	if err := cmd.Run(); err != nil {
-		defaultBranch = "master"
-	}
-
 	// Check for unpushed commits on current branch
 	cmd = exec.Command("git", "-C", repoPath, "rev-list", "--count", "@{u}..HEAD")
 	output, err = cmd.Output()
@@ -157,7 +150,7 @@ func IsClean(repoPath string) (bool, DirtyReason, error) {
 	}
 
 	// Check for unmerged local branches
-	cmd = exec.Command("git", "-C", repoPath, "branch", "--no-merged", defaultBranch)
+	cmd = exec.Command("git", "-C", repoPath, "branch", "--no-merged", mainBranch)
 	output, err = cmd.Output()
 	if err != nil {
 		return false, DirtyReasonClean, fmt.Errorf("failed to check unmerged branches: %w", err)
@@ -167,9 +160,9 @@ func IsClean(repoPath string) (bool, DirtyReason, error) {
 		return false, DirtyReasonUnmergedBranches, nil
 	}
 
-	// If not on default branch, check if current branch has been merged
-	if currentBranch != "main" && currentBranch != "master" {
-		cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", defaultBranch)
+	// If not on main branch, check if current branch has been merged
+	if currentBranch != mainBranch {
+		cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", mainBranch)
 		output, err = cmd.Output()
 		if err != nil {
 			return false, DirtyReasonClean, fmt.Errorf("failed to check merge status: %w", err)
