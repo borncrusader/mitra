@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 
 	"mitra/internal/proto"
+	"mitra/internal/util"
 )
 
 func SelectRepo(repos []*proto.Repo, worktrees []*proto.Worktree, promptText string, sortAscending bool) (*proto.Repo, error) {
@@ -20,12 +21,23 @@ func SelectRepo(repos []*proto.Repo, worktrees []*proto.Worktree, promptText str
 		worktreeCounts[wt.RepoId]++
 	}
 
-	// Sort repos by worktree count
+	// Sort repos by worktree count, then by timestamp
 	sort.Slice(repos, func(i, j int) bool {
-		if sortAscending {
-			return worktreeCounts[repos[i].Id] < worktreeCounts[repos[j].Id]
+		countI := worktreeCounts[repos[i].Id]
+		countJ := worktreeCounts[repos[j].Id]
+
+		// Primary sort: worktree count
+		if countI != countJ {
+			if sortAscending {
+				return countI < countJ
+			}
+			return countI > countJ
 		}
-		return worktreeCounts[repos[i].Id] > worktreeCounts[repos[j].Id]
+
+		// Secondary sort: timestamp (descending - newest first)
+		timestampI := util.ExtractTimestamp(repos[i].Id)
+		timestampJ := util.ExtractTimestamp(repos[j].Id)
+		return timestampI > timestampJ
 	})
 
 	// Build table columns
