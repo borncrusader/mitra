@@ -10,6 +10,7 @@ import (
 
 	"mitra/internal/proto"
 	"mitra/internal/tui/selectors"
+	"mitra/internal/util"
 )
 
 var repoCmd = &cobra.Command{
@@ -79,9 +80,20 @@ var repoListCmd = &cobra.Command{
 			worktreeCounts[wt.RepoId]++
 		}
 
-		// Sort repos by worktree count (descending)
+		// Sort repos by worktree count (descending), then by timestamp (descending)
 		sort.Slice(reposResp.Repos, func(i, j int) bool {
-			return worktreeCounts[reposResp.Repos[i].Id] > worktreeCounts[reposResp.Repos[j].Id]
+			countI := worktreeCounts[reposResp.Repos[i].Id]
+			countJ := worktreeCounts[reposResp.Repos[j].Id]
+
+			// Primary sort: worktree count (descending)
+			if countI != countJ {
+				return countI > countJ
+			}
+
+			// Secondary sort: timestamp (descending - newest first)
+			timestampI := util.ExtractTimestamp(reposResp.Repos[i].Id)
+			timestampJ := util.ExtractTimestamp(reposResp.Repos[j].Id)
+			return timestampI > timestampJ
 		})
 
 		// Build table columns

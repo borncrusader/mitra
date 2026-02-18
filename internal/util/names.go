@@ -3,6 +3,8 @@ package util
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -39,4 +41,22 @@ func RandomName() string {
 	hexTimestamp := fmt.Sprintf("%x", timestamp)
 
 	return fmt.Sprintf("%s-%s-%s", adj, noun, hexTimestamp)
+}
+
+// ExtractTimestamp extracts the Unix timestamp from a generated name
+// Returns the timestamp in seconds, or 0 if the name format is invalid
+func ExtractTimestamp(name string) int64 {
+	parts := strings.Split(name, "-")
+	if len(parts) != 3 {
+		return 0
+	}
+
+	// Last part is the hex timestamp
+	hexTimestamp := parts[2]
+	timestamp, err := strconv.ParseInt(hexTimestamp, 16, 64)
+	if err != nil {
+		return 0
+	}
+
+	return timestamp
 }
