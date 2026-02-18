@@ -358,6 +358,18 @@ func (s *MitraServiceServer) AddWorktreeEntry(repoID, branch, path string, isMai
 		Bool("is_main", isMain).
 		Msg("worktree entry added")
 
+	// Create tmux session for this worktree
+	sessionCmd := NewCreateSessionCommand(worktree.Id, path)
+	s.sessionManager.SendCommand(sessionCmd)
+
+	if err := <-sessionCmd.responseChan; err != nil {
+		s.logger.Warn().
+			Err(err).
+			Str("worktree_id", worktree.Id).
+			Str("path", path).
+			Msg("failed to create tmux session, continuing anyway")
+	}
+
 	return nil
 }
 
