@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -125,17 +124,8 @@ var worktreeListCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("failed to list repos")
 		}
 
-		// Create repo map for quick lookup
-		repoMap := make(map[string]*proto.Repo)
-		for _, r := range reposResp.Repos {
-			repoMap[r.Id] = r
-		}
-
-		// Group worktrees by repo
-		worktreesByRepo := make(map[string][]*proto.Worktree)
-		for _, wt := range worktreesResp.Worktrees {
-			worktreesByRepo[wt.RepoId] = append(worktreesByRepo[wt.RepoId], wt)
-		}
+		// Group and sort worktrees by repo using shared function
+		groupedWorktrees := selectors.GroupWorktreesByRepo(worktreesResp.Worktrees, reposResp.Repos)
 
 		// Build table columns (without Repository column since it's in section headers)
 		columns := []table.Column{
@@ -145,21 +135,6 @@ var worktreeListCmd = &cobra.Command{
 			{Title: "Status", Width: selectors.ColumnWidths["Status"]},
 		}
 
-		// Get repos sorted by worktree count (descending)
-		type repoWithCount struct {
-			repo  *proto.Repo
-			count int
-		}
-		var sortedRepos []repoWithCount
-		for repoID, worktrees := range worktreesByRepo {
-			if repo := repoMap[repoID]; repo != nil {
-				sortedRepos = append(sortedRepos, repoWithCount{repo, len(worktrees)})
-			}
-		}
-		sort.Slice(sortedRepos, func(i, j int) bool {
-			return sortedRepos[i].count > sortedRepos[j].count
-		})
-
 		// Style for section headers
 		headerStyle := lipgloss.NewStyle().
 			Bold(true).
@@ -167,15 +142,15 @@ var worktreeListCmd = &cobra.Command{
 			PaddingLeft(1)
 
 		// Print each repo section
-		for i, rc := range sortedRepos {
+		for i, rw := range groupedWorktrees {
 			// Print section header
-			repoPath := fmt.Sprintf("%s/%s/%s", rc.repo.Host, rc.repo.Owner, rc.repo.Repo)
-			header := fmt.Sprintf("Repository: %s (%d worktrees)", repoPath, rc.count)
+			repoPath := fmt.Sprintf("%s/%s/%s", rw.Repo.Host, rw.Repo.Owner, rw.Repo.Repo)
+			header := fmt.Sprintf("Repository: %s (%d worktrees)", repoPath, len(rw.Worktrees))
 			fmt.Println(headerStyle.Render(header))
 
 			// Build rows for this repo
 			rows := []table.Row{}
-			for _, wt := range worktreesByRepo[rc.repo.Id] {
+			for _, wt := range rw.Worktrees {
 				parentBranch := "-"
 				if wt.ParentBranch != nil {
 					parentBranch = *wt.ParentBranch
@@ -194,7 +169,7 @@ var worktreeListCmd = &cobra.Command{
 			fmt.Print(output)
 
 			// Add spacing between sections (except after last section)
-			if i < len(sortedRepos)-1 {
+			if i < len(groupedWorktrees)-1 {
 				fmt.Println()
 			}
 		}

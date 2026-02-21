@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/rs/zerolog/log"
@@ -10,7 +9,6 @@ import (
 
 	"mitra/internal/proto"
 	"mitra/internal/tui/selectors"
-	"mitra/internal/util"
 )
 
 var repoCmd = &cobra.Command{
@@ -74,27 +72,14 @@ var repoListCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("failed to list worktrees")
 		}
 
-		// Count worktrees per repo
+		// Sort repos using shared function
+		selectors.SortReposByWorktreeCount(reposResp.Repos, worktreesResp.Worktrees, false)
+
+		// Count worktrees per repo for display
 		worktreeCounts := make(map[string]int)
 		for _, wt := range worktreesResp.Worktrees {
 			worktreeCounts[wt.RepoId]++
 		}
-
-		// Sort repos by worktree count (descending), then by timestamp (descending)
-		sort.Slice(reposResp.Repos, func(i, j int) bool {
-			countI := worktreeCounts[reposResp.Repos[i].Id]
-			countJ := worktreeCounts[reposResp.Repos[j].Id]
-
-			// Primary sort: worktree count (descending)
-			if countI != countJ {
-				return countI > countJ
-			}
-
-			// Secondary sort: timestamp (descending - newest first)
-			timestampI := util.ExtractTimestamp(reposResp.Repos[i].Id)
-			timestampJ := util.ExtractTimestamp(reposResp.Repos[j].Id)
-			return timestampI > timestampJ
-		})
 
 		// Build table columns
 		columns := []table.Column{
