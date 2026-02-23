@@ -19,20 +19,6 @@ import (
 	"mitra/internal/util"
 )
 
-type viewState int
-
-const (
-	stateWelcome viewState = iota
-	stateDashboard
-)
-
-type tabView int
-
-const (
-	tabOverview tabView = iota
-	tabRepos
-)
-
 type dataLoadedMsg struct {
 	repos     []*proto.Repo
 	worktrees []*proto.Worktree
@@ -75,19 +61,17 @@ func (i repoItem) FilterValue() string {
 }
 
 type DashboardModel struct {
-	width         int
-	height        int
-	quitting      bool
-	state         viewState
-	activeTab     tabView
-	repos         []*proto.Repo
-	worktrees     []*proto.Worktree
-	reposList     list.Model
-	loading       bool
-	err           error
-	spinner       spinner.Model
-	connecting    bool
-	nextRetryTime time.Time
+	width          int
+	height         int
+	quitting       bool
+	repos          []*proto.Repo
+	worktrees      []*proto.Worktree
+	reposList      list.Model
+	reposListReady bool
+	err            error
+	spinner        spinner.Model
+	connecting     bool
+	nextRetryTime  time.Time
 }
 
 func NewDashboard() DashboardModel {
@@ -95,13 +79,13 @@ func NewDashboard() DashboardModel {
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
 	return DashboardModel{
-		state:   stateWelcome,
-		spinner: s,
+		connecting: true,
+		spinner:    s,
 	}
 }
 
 func (m DashboardModel) Init() tea.Cmd {
-	return nil
+	return tea.Batch(loadData, m.spinner.Tick)
 }
 
 func tickCmd() tea.Cmd {
@@ -148,11 +132,8 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		if m.state == stateDashboard {
-			// Reserve space for header and footer
-			listHeight := msg.Height - 8
-			listWidth := msg.Width - 4
-			m.reposList.SetSize(listWidth, listHeight)
+		if m.reposListReady {
+			m.reposList.SetSize(msg.Width-4, msg.Height-9)
 		}
 		return m, nil
 	case tea.KeyMsg:
@@ -160,61 +141,40 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			m.quitting = true
 			return m, tea.Quit
-		case "tab":
-			if m.state == stateDashboard && !m.connecting {
-				m.activeTab = (m.activeTab + 1) % 2
-			}
-			return m, nil
-		case "shift+tab":
-			if m.state == stateDashboard && !m.connecting {
-				m.activeTab = (m.activeTab - 1 + 2) % 2
-			}
-			return m, nil
 		default:
-			if m.state == stateWelcome && !m.loading {
-				m.state = stateDashboard
-				m.loading = true
-				m.connecting = true
-				return m, tea.Batch(loadData, m.spinner.Tick)
-			}
-
-			// Delegate to list if in Repos tab
-			if m.state == stateDashboard && m.activeTab == tabRepos && len(m.repos) > 0 {
+			if m.reposListReady && len(m.repos) > 0 {
 				var cmd tea.Cmd
 				m.reposList, cmd = m.reposList.Update(msg)
 				return m, cmd
 			}
 		}
 	case dataLoadedMsg:
-		m.loading = false
 		if msg.err != nil {
 			m.err = msg.err
 			m.nextRetryTime = time.Now().Add(5 * time.Second)
 			return m, tickCmd()
-		} else {
-			m.connecting = false
-			m.repos = msg.repos
-			m.worktrees = msg.worktrees
-
-			// Build list items
-			items := make([]list.Item, len(m.repos))
-			for i, repo := range m.repos {
-				items[i] = repoItem{
-					repo:      repo,
-					worktrees: m.getWorktreesForRepo(repo.Id),
-				}
-			}
-
-			m.reposList = list.New(items, list.NewDefaultDelegate(), 0, 0)
-			m.reposList.Title = "Repositories"
-			m.reposList.SetShowStatusBar(false)
-			m.reposList.SetFilteringEnabled(true)
 		}
+		m.connecting = false
+		m.repos = msg.repos
+		m.worktrees = msg.worktrees
+
+		items := make([]list.Item, len(m.repos))
+		for i, repo := range m.repos {
+			items[i] = repoItem{
+				repo:      repo,
+				worktrees: m.getWorktreesForRepo(repo.Id),
+			}
+		}
+
+		m.reposList = list.New(items, list.NewDefaultDelegate(), m.width-4, m.height-9)
+		m.reposList.Title = "Repositories"
+		m.reposList.SetShowStatusBar(false)
+		m.reposList.SetFilteringEnabled(true)
+		m.reposListReady = true
 		return m, nil
 	case tickMsg:
 		if m.connecting {
 			if time.Now().After(m.nextRetryTime) {
-				m.loading = true
 				return m, loadData
 			}
 			return m, tickCmd()
@@ -233,128 +193,50 @@ func (m DashboardModel) View() string {
 	if m.quitting {
 		return ""
 	}
-
-	switch m.state {
-	case stateWelcome:
-		return m.renderWelcome()
-	case stateDashboard:
-		return m.renderDashboard()
-	}
-
-	return ""
-}
-
-func (m DashboardModel) renderTabs() string {
-	tabs := []string{"Overview", "Repos"}
-	var tabStrs []string
-
-	for i, tab := range tabs {
-		if tabView(i) == m.activeTab {
-			tabStrs = append(tabStrs, fmt.Sprintf("[ %s ]", tab))
-		} else {
-			tabStrs = append(tabStrs, fmt.Sprintf("  %s  ", tab))
-		}
-	}
-
-	return strings.Join(tabStrs, " ")
-}
-
-func (m DashboardModel) renderWelcome() string {
-	lines := []string{
-		"███╗   ███╗██╗████████╗██████╗  █████╗ ",
-		"████╗ ████║██║╚══██╔══╝██╔══██╗██╔══██╗",
-		"██╔████╔██║██║   ██║   ██████╔╝███████║",
-		"██║╚██╔╝██║██║   ██║   ██╔══██╗██╔══██║",
-		"██║ ╚═╝ ██║██║   ██║   ██║  ██║██║  ██║",
-		"╚═╝     ╚═╝╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝",
-		"",
-		"Repos, Worktrees, Branches and Agents",
-		"",
-		"",
-		"Press any key to continue or q to quit",
-	}
-
-	return m.centerContent(lines)
+	return m.renderDashboard()
 }
 
 func (m DashboardModel) renderDashboard() string {
 	if m.connecting {
 		var lines []string
 		if m.nextRetryTime.IsZero() {
-			lines = []string{
-				fmt.Sprintf("%s Connecting to server...", m.spinner.View()),
-			}
+			lines = []string{fmt.Sprintf("%s Connecting to server...", m.spinner.View())}
 		} else {
 			secondsLeft := int(time.Until(m.nextRetryTime).Seconds())
 			if secondsLeft < 0 {
 				secondsLeft = 0
 			}
-			lines = []string{
-				fmt.Sprintf("%s Connecting to server in %d seconds...", m.spinner.View(), secondsLeft),
-			}
+			lines = []string{fmt.Sprintf("%s Connecting to server in %d seconds...", m.spinner.View(), secondsLeft)}
 		}
 		return m.centerContent(lines)
 	}
 
 	var lines []string
-	lines = append(lines, "")
-	lines = append(lines, "MITRA DASHBOARD")
-	lines = append(lines, "")
-	lines = append(lines, m.renderTabs())
+	lines = append(lines, "███╗   ███╗██╗████████╗██████╗  █████╗ ")
+	lines = append(lines, "████╗ ████║██║╚══██╔══╝██╔══██╗██╔══██╗")
+	lines = append(lines, "██╔████╔██║██║   ██║   ██████╔╝███████║")
+	lines = append(lines, "██║╚██╔╝██║██║   ██║   ██╔══██╗██╔══██║")
+	lines = append(lines, "██║ ╚═╝ ██║██║   ██║   ██║  ██║██║  ██║")
+	lines = append(lines, "╚═╝     ╚═╝╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝")
 	lines = append(lines, "")
 
-	switch m.activeTab {
-	case tabOverview:
-		lines = append(lines, m.renderOverviewTab()...)
-	case tabRepos:
-		lines = append(lines, m.renderReposTab()...)
-	}
-
-	lines = append(lines, "")
-	if m.activeTab == tabRepos && len(m.repos) > 0 {
-		lines = append(lines, "↑/↓ navigate | / filter | Tab switch tab | q quit")
+	if len(m.repos) == 0 {
+		lines = append(lines, "No repositories found")
+		lines = append(lines, "")
+		lines = append(lines, "Add a repo with: mitra repo add <url>")
+		lines = append(lines, "")
+		lines = append(lines, "q quit")
 	} else {
-		lines = append(lines, "Tab switch tab | q quit")
+		listView := m.reposList.View()
+		lines = append(lines, strings.Split(listView, "\n")...)
 	}
 
-	// Add left padding
 	paddedLines := make([]string, len(lines))
 	for i, line := range lines {
 		paddedLines[i] = "  " + line
 	}
 
 	return strings.Join(paddedLines, "\n")
-}
-
-func (m DashboardModel) renderOverviewTab() []string {
-	var lines []string
-
-	repoCount := len(m.repos)
-	worktreeCount := len(m.worktrees)
-
-	lines = append(lines, "═══════════════════════════════════════")
-	lines = append(lines, "")
-	lines = append(lines, fmt.Sprintf("Repositories: %d", repoCount))
-	lines = append(lines, fmt.Sprintf("Worktrees:    %d", worktreeCount))
-	lines = append(lines, "")
-	lines = append(lines, "═══════════════════════════════════════")
-
-	return lines
-}
-
-func (m DashboardModel) renderReposTab() []string {
-	var lines []string
-
-	if len(m.repos) == 0 {
-		lines = append(lines, "No repositories found")
-		lines = append(lines, "")
-		lines = append(lines, "Add a repo with: mitra repo add <url>")
-		return lines
-	}
-
-	// Return the list view as lines
-	listView := m.reposList.View()
-	return strings.Split(listView, "\n")
 }
 
 func (m DashboardModel) getWorktreesForRepo(repoID string) []*proto.Worktree {
