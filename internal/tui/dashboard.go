@@ -16,16 +16,29 @@ import (
 
 	"mitra/internal/config"
 	"mitra/internal/proto"
+	"mitra/internal/tmux"
 	"mitra/internal/util"
+)
+
+type paneView int
+
+const (
+	paneRepos paneView = iota
+	paneSessions
 )
 
 type dataLoadedMsg struct {
 	repos     []*proto.Repo
 	worktrees []*proto.Worktree
+	sessions  []*proto.Session
 	err       error
 }
 
+type sessionDetachedMsg struct{ err error }
+
 type tickMsg time.Time
+
+// repoItem
 
 type repoItem struct {
 	repo      *proto.Repo
@@ -56,22 +69,52 @@ func (i repoItem) Description() string {
 	return fmt.Sprintf("%d worktrees: %s", len(branches), strings.Join(branches, ", "))
 }
 
-func (i repoItem) FilterValue() string {
-	return i.Title()
+func (i repoItem) FilterValue() string { return i.Title() }
+
+// sessionItem
+
+type sessionItem struct {
+	repoPath string
+	branch   string
 }
 
+func (i sessionItem) Title() string       { return i.repoPath }
+func (i sessionItem) Description() string { return i.branch }
+func (i sessionItem) FilterValue() string { return i.repoPath }
+
+// styles
+
+var (
+	activeTitleStyle = lipgloss.NewStyle().
+				Background(lipgloss.Color("15")).
+				Foreground(lipgloss.Color("0")).
+				Padding(0, 1)
+	inactiveTitleStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("8")).
+				Padding(0, 1)
+)
+
+// DashboardModel
+
 type DashboardModel struct {
-	width          int
-	height         int
-	quitting       bool
-	repos          []*proto.Repo
-	worktrees      []*proto.Worktree
-	reposList      list.Model
-	reposListReady bool
-	err            error
-	spinner        spinner.Model
-	connecting     bool
-	nextRetryTime  time.Time
+	width             int
+	height            int
+	quitting          bool
+	focusedPane       paneView
+	repos             []*proto.Repo
+	worktrees         []*proto.Worktree
+	sessions          []*proto.Session
+	reposList         list.Model
+	reposListReady    bool
+	sessionsList      list.Model
+	sessionsListReady bool
+	err               error
+	spinner           spinner.Model
+	connecting        bool
+	nextRetryTime     time.Time
+	savedReposIdx     int
+	savedSessionsIdx  int
+	restoreIdx        bool
 }
 
 func NewDashboard() DashboardModel {
@@ -121,10 +164,21 @@ func loadData() tea.Msg {
 		return dataLoadedMsg{err: fmt.Errorf("failed to list worktrees: %w", err)}
 	}
 
+	sessionResp, err := client.ListSessions(ctx, &proto.ListSessionsRequest{})
+	if err != nil {
+		return dataLoadedMsg{err: fmt.Errorf("failed to list sessions: %w", err)}
+	}
+
 	return dataLoadedMsg{
 		repos:     repoResp.Repos,
 		worktrees: worktreeResp.Worktrees,
+		sessions:  sessionResp.Sessions,
 	}
+}
+
+func (m DashboardModel) paneHeight() int {
+	// 6 banner + 1 empty + 1 footer = 8; split remainder between two panes
+	return (m.height - 8) / 2
 }
 
 func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -132,22 +186,67 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		h := m.paneHeight()
 		if m.reposListReady {
-			m.reposList.SetSize(msg.Width-4, msg.Height-9)
+			m.reposList.SetSize(msg.Width-4, h)
+		}
+		if m.sessionsListReady {
+			m.sessionsList.SetSize(msg.Width-4, h)
 		}
 		return m, nil
+
 	case tea.KeyMsg:
+		// Let the focused list consume keys when it's filtering
+		if m.focusedPane == paneRepos && m.reposListReady && m.reposList.FilterState() == list.Filtering {
+			var cmd tea.Cmd
+			m.reposList, cmd = m.reposList.Update(msg)
+			return m, cmd
+		}
+		if m.focusedPane == paneSessions && m.sessionsListReady && m.sessionsList.FilterState() == list.Filtering {
+			var cmd tea.Cmd
+			m.sessionsList, cmd = m.sessionsList.Update(msg)
+			return m, cmd
+		}
+
 		switch msg.String() {
 		case "ctrl+c", "q":
 			m.quitting = true
 			return m, tea.Quit
+		case "tab":
+			if m.focusedPane == paneRepos {
+				m.focusedPane = paneSessions
+			} else {
+				m.focusedPane = paneRepos
+			}
+			m.applyFocusStyles()
+			return m, nil
+		case "enter":
+			if m.focusedPane == paneSessions && m.sessionsListReady && len(m.sessions) > 0 {
+				idx := m.sessionsList.Index()
+				if idx >= 0 && idx < len(m.sessions) {
+					sessionID := m.sessions[idx].Id
+					m.savedReposIdx = m.reposList.Index()
+					m.savedSessionsIdx = idx
+					m.restoreIdx = true
+					attachCmd := tmux.AttachSessionCmd(sessionID)
+					return m, tea.ExecProcess(attachCmd, func(err error) tea.Msg {
+						return sessionDetachedMsg{err: err}
+					})
+				}
+			}
 		default:
-			if m.reposListReady && len(m.repos) > 0 {
+			if m.focusedPane == paneRepos && m.reposListReady {
 				var cmd tea.Cmd
 				m.reposList, cmd = m.reposList.Update(msg)
 				return m, cmd
 			}
+			if m.focusedPane == paneSessions && m.sessionsListReady {
+				var cmd tea.Cmd
+				m.sessionsList, cmd = m.sessionsList.Update(msg)
+				return m, cmd
+			}
 		}
+
 	case dataLoadedMsg:
 		if msg.err != nil {
 			m.err = msg.err
@@ -157,21 +256,64 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.connecting = false
 		m.repos = msg.repos
 		m.worktrees = msg.worktrees
+		m.sessions = msg.sessions
 
-		items := make([]list.Item, len(m.repos))
+		h := m.paneHeight()
+		w := m.width - 4
+
+		// Build repos list
+		repoItems := make([]list.Item, len(m.repos))
 		for i, repo := range m.repos {
-			items[i] = repoItem{
+			repoItems[i] = repoItem{
 				repo:      repo,
 				worktrees: m.getWorktreesForRepo(repo.Id),
 			}
 		}
-
-		m.reposList = list.New(items, list.NewDefaultDelegate(), m.width-4, m.height-9)
+		m.reposList = list.New(repoItems, list.NewDefaultDelegate(), w, h)
 		m.reposList.Title = "Repositories"
 		m.reposList.SetShowStatusBar(false)
 		m.reposList.SetFilteringEnabled(true)
 		m.reposListReady = true
+		if m.restoreIdx {
+			m.reposList.Select(m.savedReposIdx)
+		}
+
+		// Build sessions list
+		worktreeMap := make(map[string]*proto.Worktree)
+		for _, wt := range m.worktrees {
+			worktreeMap[wt.Id] = wt
+		}
+		repoMap := make(map[string]*proto.Repo)
+		for _, r := range m.repos {
+			repoMap[r.Id] = r
+		}
+		sessionItems := make([]list.Item, len(m.sessions))
+		for i, s := range m.sessions {
+			repoPath, branch := "unknown", "unknown"
+			if wt := worktreeMap[s.WorktreeId]; wt != nil {
+				branch = wt.Branch
+				if r := repoMap[wt.RepoId]; r != nil {
+					repoPath = fmt.Sprintf("%s/%s/%s", r.Host, r.Owner, r.Repo)
+				}
+			}
+			sessionItems[i] = sessionItem{repoPath: repoPath, branch: branch}
+		}
+		m.sessionsList = list.New(sessionItems, list.NewDefaultDelegate(), w, h)
+		m.sessionsList.Title = "Sessions"
+		m.sessionsList.SetShowStatusBar(false)
+		m.sessionsList.SetFilteringEnabled(true)
+		m.sessionsListReady = true
+		if m.restoreIdx {
+			m.sessionsList.Select(m.savedSessionsIdx)
+			m.restoreIdx = false
+		}
+
+		m.applyFocusStyles()
 		return m, nil
+
+	case sessionDetachedMsg:
+		return m, loadData
+
 	case tickMsg:
 		if m.connecting {
 			if time.Now().After(m.nextRetryTime) {
@@ -180,6 +322,7 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tickCmd()
 		}
 		return m, nil
+
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -187,6 +330,23 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func (m *DashboardModel) applyFocusStyles() {
+	if m.reposListReady {
+		if m.focusedPane == paneRepos {
+			m.reposList.Styles.Title = activeTitleStyle
+		} else {
+			m.reposList.Styles.Title = inactiveTitleStyle
+		}
+	}
+	if m.sessionsListReady {
+		if m.focusedPane == paneSessions {
+			m.sessionsList.Styles.Title = activeTitleStyle
+		} else {
+			m.sessionsList.Styles.Title = inactiveTitleStyle
+		}
+	}
 }
 
 func (m DashboardModel) View() string {
@@ -220,15 +380,17 @@ func (m DashboardModel) renderDashboard() string {
 	lines = append(lines, "╚═╝     ╚═╝╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝")
 	lines = append(lines, "")
 
-	if len(m.repos) == 0 {
-		lines = append(lines, "No repositories found")
-		lines = append(lines, "")
-		lines = append(lines, "Add a repo with: mitra repo add <url>")
-		lines = append(lines, "")
-		lines = append(lines, "q quit")
+	if m.reposListReady {
+		lines = append(lines, strings.Split(m.reposList.View(), "\n")...)
+	}
+	if m.sessionsListReady {
+		lines = append(lines, strings.Split(m.sessionsList.View(), "\n")...)
+	}
+
+	if m.focusedPane == paneSessions {
+		lines = append(lines, "Tab: switch pane | ↵: attach | q: quit")
 	} else {
-		listView := m.reposList.View()
-		lines = append(lines, strings.Split(listView, "\n")...)
+		lines = append(lines, "Tab: switch pane | q: quit")
 	}
 
 	paddedLines := make([]string, len(lines))

@@ -148,11 +148,16 @@ func KillSession(name string) error {
 
 // AttachSession attaches to a tmux session with the given name
 func AttachSession(name string) error {
-	cmd := exec.Command("tmux", "attach-session", "-t", name)
-	if err := cmd.Run(); err != nil {
+	if err := AttachSessionCmd(name).Run(); err != nil {
 		return fmt.Errorf("failed to attach to tmux session: %w", err)
 	}
 	return nil
+}
+
+// AttachSessionCmd returns an exec.Cmd for attaching to a tmux session without running it.
+// Use this when the caller controls execution (e.g. tea.ExecProcess).
+func AttachSessionCmd(name string) *exec.Cmd {
+	return exec.Command("tmux", "attach-session", "-t", name)
 }
 
 // AttachSessionExec attaches to a tmux session by replacing the current process
