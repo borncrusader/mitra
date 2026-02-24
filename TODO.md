@@ -2,6 +2,15 @@
 - [ ] mac menubar
 - [ ] repo doctor - repurpose repo list perhaps?
 - [ ] spinner when deleting
-- [ ] disable syncing
+- [ ] disable syncing with config
 - [ ] more granular repo state management
 - [ ] config Storage goroutine
+- [ ] session recreation command
+- [ ] basic set of safe commands allowed - add this to the .claude/settings.local.json
+- [ ] tmux open and close from within mitra
+- [ ] color themes
+- [ ] special worktrees like server
+- [ ] importing worktrees that are not managed yet
+- [ ] branches that are not part of a worktree
+- [ ] config defaults must be written by migration
+- [ ] unify config loading

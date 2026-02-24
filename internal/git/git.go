@@ -216,3 +216,37 @@ func RemoveWorktree(mainWorktreePath, worktreePath string) error {
 
 	return nil
 }
+
+type WorktreeInfo struct {
+	Path   string
+	Branch string
+	IsMain bool
+}
+
+func ListWorktrees(mainWorktreePath string) ([]WorktreeInfo, error) {
+	cmd := exec.Command("git", "-C", mainWorktreePath, "worktree", "list", "--porcelain")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list git worktrees: %w", err)
+	}
+
+	var worktrees []WorktreeInfo
+	blocks := strings.Split(strings.TrimSpace(string(output)), "\n\n")
+	for i, block := range blocks {
+		lines := strings.Split(strings.TrimSpace(block), "\n")
+		var info WorktreeInfo
+		info.IsMain = i == 0
+		for _, line := range lines {
+			if strings.HasPrefix(line, "worktree ") {
+				info.Path = strings.TrimPrefix(line, "worktree ")
+			} else if strings.HasPrefix(line, "branch refs/heads/") {
+				info.Branch = strings.TrimPrefix(line, "branch refs/heads/")
+			}
+		}
+		if info.Path != "" && info.Branch != "" {
+			worktrees = append(worktrees, info)
+		}
+	}
+
+	return worktrees, nil
+}

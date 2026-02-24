@@ -23,9 +23,10 @@ type ServerConfig struct {
 }
 
 type RepoConfig struct {
-	Dir              string `toml:"dir"`
-	SyncIntervalSecs int    `toml:"sync_interval_secs"`
-	BranchPrefix     string `toml:"branch_prefix"`
+	Dir                    string `toml:"dir"`
+	SyncIntervalSecs       int    `toml:"sync_interval_secs"`
+	BranchPrefix           string `toml:"branch_prefix"`
+	SyncUntrackedWorktrees bool   `toml:"sync_untracked_worktrees"`
 }
 
 type SessionConfig struct {

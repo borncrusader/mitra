@@ -31,6 +31,10 @@ func Run(logger zerolog.Logger) error {
 		return fmt.Errorf("failed to ensure main worktrees: %w", err)
 	}
 
+	if err := syncUntrackedWorktrees(logger); err != nil {
+		return fmt.Errorf("failed to sync untracked worktrees: %w", err)
+	}
+
 	logger.Info().Msg("migrations completed")
 	return nil
 }
@@ -298,6 +302,98 @@ func ensureMainWorktrees(logger zerolog.Logger) error {
 			return err
 		}
 		logger.Info().Int("count", len(newWorktrees)).Msg("created missing main worktrees")
+	}
+
+	return nil
+}
+
+func syncUntrackedWorktrees(logger zerolog.Logger) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+
+	if !cfg.Repo.SyncUntrackedWorktrees {
+		return nil
+	}
+
+	repos, err := storage.LoadRepos()
+	if err != nil {
+		return err
+	}
+
+	worktrees, err := storage.LoadWorktrees()
+	if err != nil {
+		return err
+	}
+
+	tracked := make(map[string]map[string]bool)
+	mainWorktreeByRepo := make(map[string]*proto.Worktree)
+	for _, wt := range worktrees {
+		if tracked[wt.RepoId] == nil {
+			tracked[wt.RepoId] = make(map[string]bool)
+		}
+		tracked[wt.RepoId][wt.Branch] = true
+		if wt.IsMain {
+			mainWorktreeByRepo[wt.RepoId] = wt
+		}
+	}
+
+	var newWorktrees []*proto.Worktree
+	for _, repo := range repos {
+		mainWt, ok := mainWorktreeByRepo[repo.Id]
+		if !ok {
+			continue
+		}
+
+		if _, err := os.Stat(mainWt.Path); os.IsNotExist(err) {
+			continue
+		}
+
+		gitWorktrees, err := git.ListWorktrees(mainWt.Path)
+		if err != nil {
+			logger.Warn().Err(err).Str("repo_id", repo.Id).Msg("failed to list git worktrees")
+			continue
+		}
+
+		for _, gwt := range gitWorktrees {
+			if gwt.IsMain || gwt.Branch == "" {
+				continue
+			}
+
+			if tracked[repo.Id] != nil && tracked[repo.Id][gwt.Branch] {
+				continue
+			}
+
+			logger.Info().
+				Str("repo_id", repo.Id).
+				Str("branch", gwt.Branch).
+				Str("path", gwt.Path).
+				Msg("adding untracked worktree to config")
+
+			wt := &proto.Worktree{
+				Id:           util.RandomName(),
+				RepoId:       repo.Id,
+				Branch:       gwt.Branch,
+				Path:         gwt.Path,
+				IsMain:       false,
+				ParentBranch: nil,
+			}
+			newWorktrees = append(newWorktrees, wt)
+
+			if tracked[repo.Id] == nil {
+				tracked[repo.Id] = make(map[string]bool)
+			}
+			tracked[repo.Id][gwt.Branch] = true
+		}
+	}
+
+	if len(newWorktrees) > 0 {
+		allWorktrees := append(worktrees, newWorktrees...)
+		if err := storage.SaveWorktrees(allWorktrees); err != nil {
+			return err
+		}
+		logger.Info().Int("count", len(newWorktrees)).Msg("synced untracked worktrees")
 	}
 
 	return nil
