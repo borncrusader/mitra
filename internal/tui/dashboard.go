@@ -56,15 +56,11 @@ func (i repoItem) Description() string {
 
 	var branches []string
 	for _, wt := range i.worktrees {
-		if wt.IsMain {
-			branches = append(branches, fmt.Sprintf("★ %s", wt.Branch))
-		} else {
-			branches = append(branches, wt.Branch)
-		}
+		branches = append(branches, wt.Branch)
 	}
 
-	if len(branches) > 3 {
-		return fmt.Sprintf("%d worktrees: %s, ...", len(branches), strings.Join(branches[:3], ", "))
+	if len(branches) > 5 {
+		return fmt.Sprintf("%d worktrees: %s, ...", len(branches), strings.Join(branches[:5], ", "))
 	}
 	return fmt.Sprintf("%d worktrees: %s", len(branches), strings.Join(branches, ", "))
 }
@@ -176,9 +172,11 @@ func loadData() tea.Msg {
 	}
 }
 
+const bannerTopPad = 2
+
 func (m DashboardModel) paneHeight() int {
-	// 6 banner + 1 empty + 1 footer = 8; split remainder between two panes
-	return (m.height - 8) / 2
+	// bannerTopPad + 6 banner + 1 empty + 1 footer = 10; split remainder between two panes
+	return (m.height - 8 - bannerTopPad) / 2
 }
 
 func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -271,7 +269,7 @@ func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.reposList = list.New(repoItems, list.NewDefaultDelegate(), w, h)
 		m.reposList.Title = "Repositories"
-		m.reposList.SetShowStatusBar(false)
+		m.reposList.SetShowStatusBar(true)
 		m.reposList.SetFilteringEnabled(true)
 		m.reposListReady = true
 		if m.restoreIdx {
@@ -371,34 +369,50 @@ func (m DashboardModel) renderDashboard() string {
 		return m.centerContent(lines)
 	}
 
+	bannerColors := []string{"#2d6e2d", "#256025", "#1d531d", "#154515", "#0d380d", "#071d07"}
+	bannerText := []string{
+		"███╗   ███╗██╗████████╗██████╗  █████╗ ",
+		"████╗ ████║██║╚══██╔══╝██╔══██╗██╔══██╗",
+		"██╔████╔██║██║   ██║   ██████╔╝███████║",
+		"██║╚██╔╝██║██║   ██║   ██╔══██╗██╔══██║",
+		"██║ ╚═╝ ██║██║   ██║   ██║  ██║██║  ██║",
+		"╚═╝     ╚═╝╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝",
+	}
+
 	var lines []string
-	lines = append(lines, "███╗   ███╗██╗████████╗██████╗  █████╗ ")
-	lines = append(lines, "████╗ ████║██║╚══██╔══╝██╔══██╗██╔══██╗")
-	lines = append(lines, "██╔████╔██║██║   ██║   ██████╔╝███████║")
-	lines = append(lines, "██║╚██╔╝██║██║   ██║   ██╔══██╗██╔══██║")
-	lines = append(lines, "██║ ╚═╝ ██║██║   ██║   ██║  ██║██║  ██║")
-	lines = append(lines, "╚═╝     ╚═╝╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝")
+
+	// Banner: horizontally centered, with top padding
+	for i := 0; i < bannerTopPad; i++ {
+		lines = append(lines, "")
+	}
+	for i, text := range bannerText {
+		leftPad := (m.width - runewidth.StringWidth(text)) / 2
+		if leftPad < 0 {
+			leftPad = 0
+		}
+		styled := lipgloss.NewStyle().Foreground(lipgloss.Color(bannerColors[i])).Render(text)
+		lines = append(lines, strings.Repeat(" ", leftPad)+styled)
+	}
 	lines = append(lines, "")
 
+	// Content: left-padded
+	var contentLines []string
 	if m.reposListReady {
-		lines = append(lines, strings.Split(m.reposList.View(), "\n")...)
+		contentLines = append(contentLines, strings.Split(m.reposList.View(), "\n")...)
 	}
 	if m.sessionsListReady {
-		lines = append(lines, strings.Split(m.sessionsList.View(), "\n")...)
+		contentLines = append(contentLines, strings.Split(m.sessionsList.View(), "\n")...)
 	}
-
 	if m.focusedPane == paneSessions {
-		lines = append(lines, "Tab: switch pane | ↵: attach | q: quit")
+		contentLines = append(contentLines, "Tab: switch pane | ↵: attach | q: quit")
 	} else {
-		lines = append(lines, "Tab: switch pane | q: quit")
+		contentLines = append(contentLines, "Tab: switch pane | q: quit")
+	}
+	for _, line := range contentLines {
+		lines = append(lines, "  "+line)
 	}
 
-	paddedLines := make([]string, len(lines))
-	for i, line := range lines {
-		paddedLines[i] = "  " + line
-	}
-
-	return strings.Join(paddedLines, "\n")
+	return strings.Join(lines, "\n")
 }
 
 func (m DashboardModel) getWorktreesForRepo(repoID string) []*proto.Worktree {
