@@ -74,3 +74,27 @@ func EnableTrustForDir(dirPath string) error {
 
 	return nil
 }
+
+const settingsLocalJSON = ".claude/settings.local.json"
+
+// LinkSettings symlinks the main worktree's .claude/settings.local.json
+// into a newly created worktree. Silently skips if the source does not exist.
+func LinkSettings(mainWorktreePath, worktreePath string) error {
+	src := filepath.Join(mainWorktreePath, settingsLocalJSON)
+
+	if _, err := os.Stat(src); os.IsNotExist(err) {
+		return nil
+	}
+
+	dstDir := filepath.Join(worktreePath, ".claude")
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		return err
+	}
+
+	dst := filepath.Join(worktreePath, settingsLocalJSON)
+	if _, err := os.Lstat(dst); err == nil {
+		return nil
+	}
+
+	return os.Symlink(src, dst)
+}

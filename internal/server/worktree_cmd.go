@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"mitra/internal/agents"
 	"mitra/internal/git"
 	"mitra/internal/proto"
 )
@@ -63,6 +64,10 @@ func (cmd *addWorktreeCmd) Execute(w *RepoWatcher) error {
 	if err := git.CreateWorktree(mainWorktree.Path, branchWithPrefix, worktreePath, cmd.parentBranch); err != nil {
 		cmd.responseChan <- &addWorktreeResult{err: err}
 		return err
+	}
+
+	if err := agents.LinkSettings(mainWorktree.Path, worktreePath); err != nil {
+		w.logger.Warn().Err(err).Str("path", worktreePath).Msg("failed to link claude settings")
 	}
 
 	worktree := &proto.Worktree{
