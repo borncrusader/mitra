@@ -985,6 +985,102 @@ func (x *GetSessionResponse) GetSession() *Session {
 	return nil
 }
 
+type DeleteSessionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteSessionRequest) Reset() {
+	*x = DeleteSessionRequest{}
+	mi := &file_internal_proto_mitra_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteSessionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteSessionRequest) ProtoMessage() {}
+
+func (x *DeleteSessionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_mitra_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteSessionRequest.ProtoReflect.Descriptor instead.
+func (*DeleteSessionRequest) Descriptor() ([]byte, []int) {
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DeleteSessionRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+type DeleteSessionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteSessionResponse) Reset() {
+	*x = DeleteSessionResponse{}
+	mi := &file_internal_proto_mitra_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteSessionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteSessionResponse) ProtoMessage() {}
+
+func (x *DeleteSessionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_proto_mitra_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteSessionResponse.ProtoReflect.Descriptor instead.
+func (*DeleteSessionResponse) Descriptor() ([]byte, []int) {
+	return file_internal_proto_mitra_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *DeleteSessionResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteSessionResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_internal_proto_mitra_proto protoreflect.FileDescriptor
 
 const file_internal_proto_mitra_proto_rawDesc = "" +
@@ -1050,7 +1146,13 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\">\n" +
 	"\x12GetSessionResponse\x12(\n" +
-	"\asession\x18\x01 \x01(\v2\x0e.proto.SessionR\asession2\xb8\x04\n" +
+	"\asession\x18\x01 \x01(\v2\x0e.proto.SessionR\asession\"5\n" +
+	"\x14DeleteSessionRequest\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\"K\n" +
+	"\x15DeleteSessionResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\x84\x05\n" +
 	"\fMitraService\x12>\n" +
 	"\tListRepos\x12\x17.proto.ListReposRequest\x1a\x18.proto.ListReposResponse\x128\n" +
 	"\aAddRepo\x12\x15.proto.AddRepoRequest\x1a\x16.proto.AddRepoResponse\x12A\n" +
@@ -1061,7 +1163,8 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x0eDeleteWorktree\x12\x1c.proto.DeleteWorktreeRequest\x1a\x1d.proto.DeleteWorktreeResponse\x12G\n" +
 	"\fListSessions\x12\x1a.proto.ListSessionsRequest\x1a\x1b.proto.ListSessionsResponse\x12A\n" +
 	"\n" +
-	"GetSession\x12\x18.proto.GetSessionRequest\x1a\x19.proto.GetSessionResponseB\x16Z\x14mitra/internal/protob\x06proto3"
+	"GetSession\x12\x18.proto.GetSessionRequest\x1a\x19.proto.GetSessionResponse\x12J\n" +
+	"\rDeleteSession\x12\x1b.proto.DeleteSessionRequest\x1a\x1c.proto.DeleteSessionResponseB\x16Z\x14mitra/internal/protob\x06proto3"
 
 var (
 	file_internal_proto_mitra_proto_rawDescOnce sync.Once
@@ -1075,7 +1178,7 @@ func file_internal_proto_mitra_proto_rawDescGZIP() []byte {
 	return file_internal_proto_mitra_proto_rawDescData
 }
 
-var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_internal_proto_mitra_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_internal_proto_mitra_proto_goTypes = []any{
 	(*Repo)(nil),                   // 0: proto.Repo
 	(*Worktree)(nil),               // 1: proto.Worktree
@@ -1096,6 +1199,8 @@ var file_internal_proto_mitra_proto_goTypes = []any{
 	(*ListSessionsResponse)(nil),   // 16: proto.ListSessionsResponse
 	(*GetSessionRequest)(nil),      // 17: proto.GetSessionRequest
 	(*GetSessionResponse)(nil),     // 18: proto.GetSessionResponse
+	(*DeleteSessionRequest)(nil),   // 19: proto.DeleteSessionRequest
+	(*DeleteSessionResponse)(nil),  // 20: proto.DeleteSessionResponse
 }
 var file_internal_proto_mitra_proto_depIdxs = []int32{
 	0,  // 0: proto.ListReposResponse.repos:type_name -> proto.Repo
@@ -1112,16 +1217,18 @@ var file_internal_proto_mitra_proto_depIdxs = []int32{
 	13, // 11: proto.MitraService.DeleteWorktree:input_type -> proto.DeleteWorktreeRequest
 	15, // 12: proto.MitraService.ListSessions:input_type -> proto.ListSessionsRequest
 	17, // 13: proto.MitraService.GetSession:input_type -> proto.GetSessionRequest
-	4,  // 14: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
-	6,  // 15: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
-	8,  // 16: proto.MitraService.DeleteRepo:output_type -> proto.DeleteRepoResponse
-	10, // 17: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
-	12, // 18: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
-	14, // 19: proto.MitraService.DeleteWorktree:output_type -> proto.DeleteWorktreeResponse
-	16, // 20: proto.MitraService.ListSessions:output_type -> proto.ListSessionsResponse
-	18, // 21: proto.MitraService.GetSession:output_type -> proto.GetSessionResponse
-	14, // [14:22] is the sub-list for method output_type
-	6,  // [6:14] is the sub-list for method input_type
+	19, // 14: proto.MitraService.DeleteSession:input_type -> proto.DeleteSessionRequest
+	4,  // 15: proto.MitraService.ListRepos:output_type -> proto.ListReposResponse
+	6,  // 16: proto.MitraService.AddRepo:output_type -> proto.AddRepoResponse
+	8,  // 17: proto.MitraService.DeleteRepo:output_type -> proto.DeleteRepoResponse
+	10, // 18: proto.MitraService.AddWorktree:output_type -> proto.AddWorktreeResponse
+	12, // 19: proto.MitraService.ListWorktrees:output_type -> proto.ListWorktreesResponse
+	14, // 20: proto.MitraService.DeleteWorktree:output_type -> proto.DeleteWorktreeResponse
+	16, // 21: proto.MitraService.ListSessions:output_type -> proto.ListSessionsResponse
+	18, // 22: proto.MitraService.GetSession:output_type -> proto.GetSessionResponse
+	20, // 23: proto.MitraService.DeleteSession:output_type -> proto.DeleteSessionResponse
+	15, // [15:24] is the sub-list for method output_type
+	6,  // [6:15] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name
@@ -1140,7 +1247,7 @@ func file_internal_proto_mitra_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_proto_mitra_proto_rawDesc), len(file_internal_proto_mitra_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

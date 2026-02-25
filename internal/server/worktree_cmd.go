@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"mitra/internal/agents"
 	"mitra/internal/git"
@@ -178,8 +179,14 @@ func (cmd *deleteWorktreeCmd) Execute(w *RepoWatcher) error {
 		Msg("removing git worktree")
 
 	if err := git.RemoveWorktree(mainWorktree.Path, worktreeToDelete.Path); err != nil {
-		cmd.responseChan <- err
-		return err
+		if !strings.Contains(err.Error(), "is not a working tree") {
+			cmd.responseChan <- err
+			return err
+		}
+		w.logger.Warn().
+			Str("worktree_id", cmd.worktreeID).
+			Str("path", worktreeToDelete.Path).
+			Msg("git worktree not found on disk, removing from config anyway")
 	}
 
 	w.logger.Debug().

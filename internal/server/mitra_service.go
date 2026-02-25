@@ -410,6 +410,23 @@ func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.Dele
 	}, nil
 }
 
+func (s *MitraServiceServer) DeleteSession(ctx context.Context, req *proto.DeleteSessionRequest) (*proto.DeleteSessionResponse, error) {
+	cmd := NewKillSessionCommand(req.SessionId)
+	s.sessionManager.SendCommand(cmd)
+
+	if err := <-cmd.responseChan; err != nil {
+		return &proto.DeleteSessionResponse{
+			Success: false,
+			Message: err.Error(),
+		}, nil
+	}
+
+	return &proto.DeleteSessionResponse{
+		Success: true,
+		Message: "session deleted successfully",
+	}, nil
+}
+
 func (s *MitraServiceServer) ListSessions(ctx context.Context, req *proto.ListSessionsRequest) (*proto.ListSessionsResponse, error) {
 	sessionNames, err := tmux.ListSessions()
 	if err != nil {

@@ -27,6 +27,7 @@ const (
 	MitraService_DeleteWorktree_FullMethodName = "/proto.MitraService/DeleteWorktree"
 	MitraService_ListSessions_FullMethodName   = "/proto.MitraService/ListSessions"
 	MitraService_GetSession_FullMethodName     = "/proto.MitraService/GetSession"
+	MitraService_DeleteSession_FullMethodName  = "/proto.MitraService/DeleteSession"
 )
 
 // MitraServiceClient is the client API for MitraService service.
@@ -41,6 +42,7 @@ type MitraServiceClient interface {
 	DeleteWorktree(ctx context.Context, in *DeleteWorktreeRequest, opts ...grpc.CallOption) (*DeleteWorktreeResponse, error)
 	ListSessions(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error)
 	GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GetSessionResponse, error)
+	DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error)
 }
 
 type mitraServiceClient struct {
@@ -131,6 +133,16 @@ func (c *mitraServiceClient) GetSession(ctx context.Context, in *GetSessionReque
 	return out, nil
 }
 
+func (c *mitraServiceClient) DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteSessionResponse)
+	err := c.cc.Invoke(ctx, MitraService_DeleteSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MitraServiceServer is the server API for MitraService service.
 // All implementations must embed UnimplementedMitraServiceServer
 // for forward compatibility.
@@ -143,6 +155,7 @@ type MitraServiceServer interface {
 	DeleteWorktree(context.Context, *DeleteWorktreeRequest) (*DeleteWorktreeResponse, error)
 	ListSessions(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error)
 	GetSession(context.Context, *GetSessionRequest) (*GetSessionResponse, error)
+	DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error)
 	mustEmbedUnimplementedMitraServiceServer()
 }
 
@@ -176,6 +189,9 @@ func (UnimplementedMitraServiceServer) ListSessions(context.Context, *ListSessio
 }
 func (UnimplementedMitraServiceServer) GetSession(context.Context, *GetSessionRequest) (*GetSessionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSession not implemented")
+}
+func (UnimplementedMitraServiceServer) DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteSession not implemented")
 }
 func (UnimplementedMitraServiceServer) mustEmbedUnimplementedMitraServiceServer() {}
 func (UnimplementedMitraServiceServer) testEmbeddedByValue()                      {}
@@ -342,6 +358,24 @@ func _MitraService_GetSession_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MitraService_DeleteSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MitraServiceServer).DeleteSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MitraService_DeleteSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MitraServiceServer).DeleteSession(ctx, req.(*DeleteSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MitraService_ServiceDesc is the grpc.ServiceDesc for MitraService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -380,6 +414,10 @@ var MitraService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSession",
 			Handler:    _MitraService_GetSession_Handler,
+		},
+		{
+			MethodName: "DeleteSession",
+			Handler:    _MitraService_DeleteSession_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
