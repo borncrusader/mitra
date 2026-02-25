@@ -14,3 +14,4 @@
 - [ ] branches that are not part of a worktree
 - [ ] config defaults must be written by migration
 - [ ] unify config loading
+- [ ] fuzzy finding for not just tmux
