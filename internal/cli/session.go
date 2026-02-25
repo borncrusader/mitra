@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -60,40 +61,38 @@ func (c *Command) sessionListCmd() *cobra.Command {
 				worktreeMap[wt.Id] = wt
 			}
 
-			repoMap := make(map[string]*proto.Repo)
-			for _, r := range reposResp.Repos {
-				repoMap[r.Id] = r
-			}
+			groupedSessions := selectors.GroupSessionsByRepo(sessionsResp.Sessions, worktreesResp.Worktrees, reposResp.Repos)
 
 			columns := []table.Column{
-				{Title: "Repository", Width: selectors.ColumnWidths["Repository"]},
 				{Title: "Branch", Width: selectors.ColumnWidths["Branch"]},
 				{Title: "Worktree ID", Width: selectors.ColumnWidths["Worktree ID"]},
 			}
 
-			rows := []table.Row{}
-			for _, session := range sessionsResp.Sessions {
-				worktree := worktreeMap[session.WorktreeId]
+			headerStyle := lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("12")).
+				PaddingLeft(1)
 
-				repoPath := "unknown"
-				branch := "unknown"
+			for i, rs := range groupedSessions {
+				repoPath := fmt.Sprintf("%s/%s/%s", rs.Repo.Host, rs.Repo.Owner, rs.Repo.Repo)
+				header := fmt.Sprintf("Repository: %s (%d sessions)", repoPath, len(rs.Sessions))
+				fmt.Println(headerStyle.Render(header))
 
-				if worktree != nil {
-					branch = worktree.Branch
-					repo := repoMap[worktree.RepoId]
-					if repo != nil {
-						repoPath = fmt.Sprintf("%s/%s/%s", repo.Host, repo.Owner, repo.Repo)
+				rows := []table.Row{}
+				for _, session := range rs.Sessions {
+					branch := "unknown"
+					if wt := worktreeMap[session.WorktreeId]; wt != nil {
+						branch = wt.Branch
 					}
+					rows = append(rows, table.Row{branch, session.WorktreeId})
 				}
 
-				rows = append(rows, table.Row{
-					repoPath,
-					branch,
-					session.WorktreeId,
-				})
-			}
+				fmt.Print(selectors.RenderTable(columns, rows))
 
-			fmt.Print(selectors.RenderTable(columns, rows))
+				if i < len(groupedSessions)-1 {
+					fmt.Println()
+				}
+			}
 		},
 	}
 }

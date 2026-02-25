@@ -94,3 +94,54 @@ func GroupWorktreesByRepo(worktrees []*proto.Worktree, repos []*proto.Repo) []Re
 
 	return result
 }
+
+type RepoSessions struct {
+	Repo     *proto.Repo
+	Sessions []*proto.Session
+}
+
+func GroupSessionsByRepo(sessions []*proto.Session, worktrees []*proto.Worktree, repos []*proto.Repo) []RepoSessions {
+	worktreeMap := make(map[string]*proto.Worktree)
+	for _, wt := range worktrees {
+		worktreeMap[wt.Id] = wt
+	}
+
+	repoMap := make(map[string]*proto.Repo)
+	for _, r := range repos {
+		repoMap[r.Id] = r
+	}
+
+	sessionsByRepo := make(map[string][]*proto.Session)
+	for _, s := range sessions {
+		wt := worktreeMap[s.WorktreeId]
+		if wt == nil {
+			continue
+		}
+		sessionsByRepo[wt.RepoId] = append(sessionsByRepo[wt.RepoId], s)
+	}
+
+	var result []RepoSessions
+	for repoID, ss := range sessionsByRepo {
+		if repo := repoMap[repoID]; repo != nil {
+			result = append(result, RepoSessions{
+				Repo:     repo,
+				Sessions: ss,
+			})
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		countI := len(result[i].Sessions)
+		countJ := len(result[j].Sessions)
+
+		if countI != countJ {
+			return countI > countJ
+		}
+
+		timestampI := util.ExtractTimestamp(result[i].Repo.Id)
+		timestampJ := util.ExtractTimestamp(result[j].Repo.Id)
+		return timestampI > timestampJ
+	})
+
+	return result
+}
