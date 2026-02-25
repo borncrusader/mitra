@@ -7,12 +7,16 @@ Repos, Worktrees, Branches and Agents
 3. When you update any CLI commands, update the CLAUDE.md, AGENTS.md and README.md files
 
 # Project Structure
-- `cmd/mitra/` - Main application entry point with CLI commands
+- `cmd/mitra/` - Main application entry point (minimal launcher)
+- `internal/mitra.go` - Umbrella `Mitra` struct (holds config, created in main)
+- `internal/cli/` - All CLI commands (cobra) structured as methods on `Command`
+- `internal/agents/` - AI agent integrations (Claude settings, trust setup)
 - `internal/config/` - Configuration management (Go structs, not proto)
 - `internal/migration/` - Startup migrations and validations
 - `internal/proto/` - Protobuf definitions for gRPC services and data models
 - `internal/server/` - HTTP + gRPC server implementation
 - `internal/storage/` - Data persistence layer with TOML storage
+- `internal/tui/` - TUI dashboard and test harness
 - `internal/util/` - Utility functions (random name generation, etc.)
 
 # Architecture
@@ -22,7 +26,7 @@ Repos, Worktrees, Branches and Agents
 - **Storage**: TOML files in `~/.mitra/` (config.toml, repo.toml, worktree.toml)
 - **CLI**: Cobra commands that communicate with gRPC server
 - **In-Memory Cache**: Repos and worktrees cached for fast access
-- **Migrations**: Automatic on startup - creates missing files, adds missing config fields, ensures main worktrees exist
+- **Migrations**: Automatic on startup - creates missing files, adds missing config fields, ensures main worktrees exist, optionally syncs untracked git worktrees
 
 # Make Targets
 - `make build` - Build the binary to `bin/mitra`
@@ -42,6 +46,7 @@ Config file: `~/.mitra/config.toml`
 - gRPC port: 9998 (default)
 - Repo directory: `~/code/work` (default)
 - Branch prefix: `$USER/` (default) - all branches created with this prefix
+- Sync untracked worktrees: `false` (default) - on startup, detect git worktrees not in config and add them automatically
 - Session type: `tmux` (default) - type of session manager to use
 - Session panes: Configure initial panes when creating tmux sessions
   - Format: `<window>.<pane>:<command with args>`
@@ -72,8 +77,10 @@ Location: `~/.mitra/`
 - Interactive mode: `mitra worktree add` (no arguments) shows TUI to select repo
 - Delete worktrees with `mitra worktree delete [worktree-id]`
 - Interactive delete: `mitra worktree delete` (no arguments) shows TUI to select worktree
-- Protection: Cannot delete main worktrees or worktrees that are not clean
+- Protection: Cannot delete main worktrees or worktrees that are not clean; if not clean, prompts `[y/N]` to force delete
 - Clean checks: No uncommitted changes, stashes, merge/rebase in progress, unpushed commits, etc.
+- Stale worktrees: If git reports "is not a working tree", mitra removes it from config anyway
+- Claude files: When a new worktree is created, `.claude/settings.local.json` and `CLAUDE.local.md` are symlinked from the main worktree if they exist
 - Branch prefix: All branches created with configured prefix (default: `$USER/`)
 - Branch syntax:
   - Omit branch: uses generated ID as branch name, main as parent
@@ -98,6 +105,7 @@ Available Commands:
   repo        Manage repositories
   serve       Start the server
   session     Manage sessions
+  tui         TUI utilities
   worktree    Manage worktrees
 
 Flags:
@@ -122,9 +130,11 @@ Use "mitra [command] --help" for more information about a command.
 - `mitra repo delete [repo-id]` (aliases: `r d`, `r del`, `r rm`) - Delete a repository (interactive TUI if no args, requires all non-main worktrees deleted and main worktree clean)
 - `mitra worktree add [repo-id] [branch[:parent-branch]]` (aliases: `w a`, `wt a`) - Create a new worktree (interactive TUI if no args)
 - `mitra worktree list [repo-id]` (aliases: `w l`, `w ls`) - List worktrees (TOML format)
-- `mitra worktree delete [worktree-id]` (aliases: `w d`, `w del`, `w rm`) - Delete a worktree (interactive TUI if no args, requires worktree to be clean)
-- `mitra session list` (aliases: `s l`, `s ls`, `sess l`) - List all tmux sessions (TOML format)
+- `mitra worktree delete [worktree-id]` (aliases: `w d`, `w del`, `w rm`) - Delete a worktree (interactive TUI if no args; prompts to force delete if not clean)
+- `mitra session list` (aliases: `s l`, `s ls`, `sess l`) - List all tmux sessions grouped by repo
 - `mitra session attach [session-id]` (aliases: `s a`, `s at`, `sess a`) - Attach to a tmux session (interactive TUI if no args)
+- `mitra session delete [session-id]` (aliases: `s d`, `s del`, `sess d`) - Kill a tmux session (interactive TUI if no args)
+- `mitra tui test` - Run a full-screen TUI test (for UI development)
 
 # Development
 - Proto regeneration: `make protogen` (includes gRPC code generation)

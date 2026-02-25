@@ -67,12 +67,12 @@ All commands support short aliases for faster typing.
 # Delete a worktree (interactive TUI if no args) (aliases: w d, w del, w rm)
 ./bin/mitra worktree delete [worktree-id]
 ./bin/mitra w d [worktree-id]
-# Requires: worktree must be clean (no uncommitted changes, stashes, etc.)
+# If worktree is not clean, prompts [y/N] to force delete
 # Examples:
 #   mitra w d                                # interactive worktree selection
 #   mitra w d worktree-id-123                # delete specific worktree
 
-# List sessions (aliases: s l, s ls, sess l)
+# List sessions grouped by repo (aliases: s l, s ls, sess l)
 ./bin/mitra session list
 ./bin/mitra s l
 
@@ -82,6 +82,13 @@ All commands support short aliases for faster typing.
 # Examples:
 #   mitra s a                                # interactive session selection
 #   mitra s a session-id-123                 # attach to specific session
+
+# Delete (kill) a session (interactive TUI if no args) (aliases: s d, s del, sess d)
+./bin/mitra session delete [session-id]
+./bin/mitra s d [session-id]
+
+# Run TUI test (full-screen, for UI development)
+./bin/mitra tui test
 ```
 
 ## Configuration
@@ -96,7 +103,8 @@ grpc_port = ":9998"
 [repo]
 dir = "~/code/work"
 sync_interval_secs = 600
-branch_prefix = "username/"  # Default: $USER/
+branch_prefix = "username/"             # Default: $USER/
+sync_untracked_worktrees = false        # Auto-import git worktrees not in config
 
 [session]
 type = "tmux"  # Default: tmux
