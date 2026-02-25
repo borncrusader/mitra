@@ -23,6 +23,7 @@ type addWorktreeResult struct {
 
 type deleteWorktreeCmd struct {
 	worktreeID   string
+	force        bool
 	responseChan chan<- error
 }
 
@@ -145,23 +146,25 @@ func (cmd *deleteWorktreeCmd) Execute(w *RepoWatcher) error {
 		Str("path", worktreeToDelete.Path).
 		Msg("checking if worktree is clean")
 
-	isClean, reason, err := git.IsClean(worktreeToDelete.Path, repo.MainBranch)
-	if err != nil {
-		err := fmt.Errorf("failed to check if worktree is clean: %w", err)
-		cmd.responseChan <- err
-		return err
-	}
+	if !cmd.force {
+		isClean, reason, err := git.IsClean(worktreeToDelete.Path, repo.MainBranch)
+		if err != nil {
+			err := fmt.Errorf("failed to check if worktree is clean: %w", err)
+			cmd.responseChan <- err
+			return err
+		}
 
-	w.logger.Debug().
-		Str("worktree_id", cmd.worktreeID).
-		Bool("is_clean", isClean).
-		Str("reason", string(reason)).
-		Msg("worktree clean check complete")
+		w.logger.Debug().
+			Str("worktree_id", cmd.worktreeID).
+			Bool("is_clean", isClean).
+			Str("reason", string(reason)).
+			Msg("worktree clean check complete")
 
-	if !isClean {
-		err := fmt.Errorf("worktree is not clean: %s", reason)
-		cmd.responseChan <- err
-		return err
+		if !isClean {
+			err := fmt.Errorf("worktree is not clean: %s", reason)
+			cmd.responseChan <- err
+			return err
+		}
 	}
 
 	w.logger.Info().

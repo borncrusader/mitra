@@ -390,6 +390,7 @@ func (s *MitraServiceServer) DeleteWorktree(ctx context.Context, req *proto.Dele
 	responseChan := make(chan error, 1)
 	cmd := &deleteWorktreeCmd{
 		worktreeID:   req.WorktreeId,
+		force:        req.Force,
 		responseChan: responseChan,
 	}
 

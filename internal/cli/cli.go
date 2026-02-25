@@ -38,6 +38,7 @@ func (c *Command) Root() *cobra.Command {
 	root.AddCommand(c.repoCmd())
 	root.AddCommand(c.worktreeCmd())
 	root.AddCommand(c.sessionCmd())
+	root.AddCommand(c.tuiCmd())
 
 	return root
 }
@@ -73,6 +74,27 @@ func (c *Command) configShowCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := config.Dump(c.Cfg); err != nil {
 				log.Fatal().Err(err).Msg("failed to dump config")
+			}
+		},
+	}
+}
+
+func (c *Command) tuiCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "tui",
+		Short: "TUI utilities",
+	}
+	cmd.AddCommand(c.tuiTestCmd())
+	return cmd
+}
+
+func (c *Command) tuiTestCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "test",
+		Short: "Run TUI test",
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := tui.RunTest(); err != nil {
+				log.Fatal().Err(err).Msg("failed to run tui test")
 			}
 		},
 	}

@@ -716,6 +716,7 @@ func (x *ListWorktreesResponse) GetWorktrees() []*Worktree {
 type DeleteWorktreeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorktreeId    string                 `protobuf:"bytes,1,opt,name=worktree_id,json=worktreeId,proto3" json:"worktree_id,omitempty"`
+	Force         bool                   `protobuf:"varint,2,opt,name=force,proto3" json:"force,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -755,6 +756,13 @@ func (x *DeleteWorktreeRequest) GetWorktreeId() string {
 		return x.WorktreeId
 	}
 	return ""
+}
+
+func (x *DeleteWorktreeRequest) GetForce() bool {
+	if x != nil {
+		return x.Force
+	}
+	return false
 }
 
 type DeleteWorktreeResponse struct {
@@ -1027,10 +1035,11 @@ const file_internal_proto_mitra_proto_rawDesc = "" +
 	"\x14ListWorktreesRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"F\n" +
 	"\x15ListWorktreesResponse\x12-\n" +
-	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees\"8\n" +
+	"\tworktrees\x18\x01 \x03(\v2\x0f.proto.WorktreeR\tworktrees\"N\n" +
 	"\x15DeleteWorktreeRequest\x12\x1f\n" +
 	"\vworktree_id\x18\x01 \x01(\tR\n" +
-	"worktreeId\"L\n" +
+	"worktreeId\x12\x14\n" +
+	"\x05force\x18\x02 \x01(\bR\x05force\"L\n" +
 	"\x16DeleteWorktreeResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"\x15\n" +

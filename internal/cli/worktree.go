@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -218,6 +220,28 @@ func (c *Command) worktreeDeleteCmd() *cobra.Command {
 			})
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to delete worktree")
+			}
+
+			if resp.Success {
+				log.Info().Str("worktree_id", worktreeID).Msg(resp.Message)
+				return
+			}
+
+			log.Warn().Str("worktree_id", worktreeID).Msg(resp.Message)
+
+			fmt.Printf("Force delete anyway? [y/N] ")
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			if strings.ToLower(strings.TrimSpace(scanner.Text())) != "y" {
+				return
+			}
+
+			resp, err = cc.Client.DeleteWorktree(cc.Ctx, &proto.DeleteWorktreeRequest{
+				WorktreeId: worktreeID,
+				Force:      true,
+			})
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to force delete worktree")
 			}
 
 			if resp.Success {
