@@ -66,8 +66,8 @@ func (cmd *addWorktreeCmd) Execute(w *RepoWatcher) error {
 		return err
 	}
 
-	if err := agents.LinkSettings(mainWorktree.Path, worktreePath); err != nil {
-		w.logger.Warn().Err(err).Str("path", worktreePath).Msg("failed to link claude settings")
+	if err := agents.SetupFiles(mainWorktree.Path, worktreePath); err != nil {
+		w.logger.Warn().Err(err).Str("path", worktreePath).Msg("failed to setup claude files")
 	}
 
 	worktree := &proto.Worktree{

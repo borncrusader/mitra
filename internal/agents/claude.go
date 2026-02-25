@@ -75,25 +75,28 @@ func EnableTrustForDir(dirPath string) error {
 	return nil
 }
 
-const settingsLocalJSON = ".claude/settings.local.json"
+// SetupFiles symlinks Claude-local files from the main worktree into a newly
+// created worktree. Silently skips any file that does not exist in the source.
+func SetupFiles(mainWorktreePath, worktreePath string) error {
+	if err := symlinkFile(mainWorktreePath, worktreePath, ".claude/settings.local.json"); err != nil {
+		return err
+	}
+	return symlinkFile(mainWorktreePath, worktreePath, "CLAUDE.local.md")
+}
 
-// LinkSettings symlinks the main worktree's .claude/settings.local.json
-// into a newly created worktree. Silently skips if the source does not exist.
-func LinkSettings(mainWorktreePath, worktreePath string) error {
-	src := filepath.Join(mainWorktreePath, settingsLocalJSON)
-
+func symlinkFile(srcDir, dstDir, relPath string) error {
+	src := filepath.Join(srcDir, relPath)
 	if _, err := os.Stat(src); os.IsNotExist(err) {
 		return nil
 	}
 
-	dstDir := filepath.Join(worktreePath, ".claude")
-	if err := os.MkdirAll(dstDir, 0755); err != nil {
-		return err
-	}
-
-	dst := filepath.Join(worktreePath, settingsLocalJSON)
+	dst := filepath.Join(dstDir, relPath)
 	if _, err := os.Lstat(dst); err == nil {
 		return nil
+	}
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+		return err
 	}
 
 	return os.Symlink(src, dst)
