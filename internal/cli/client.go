@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"context"
@@ -7,34 +7,28 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"mitra/internal/config"
 	"mitra/internal/proto"
 	"mitra/internal/util"
 )
 
-type ClientContext struct {
+type clientContext struct {
 	Client proto.MitraServiceClient
 	Ctx    context.Context
 	cancel context.CancelFunc
 	conn   *grpc.ClientConn
 }
 
-func (c *ClientContext) Close() {
-	if c.cancel != nil {
-		c.cancel()
+func (cc *clientContext) Close() {
+	if cc.cancel != nil {
+		cc.cancel()
 	}
-	if c.conn != nil {
-		util.DeferCheck(c.conn.Close)
+	if cc.conn != nil {
+		util.DeferCheck(cc.conn.Close)
 	}
 }
 
-func newClient() (*ClientContext, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := grpc.NewClient("localhost"+cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (c *Command) newClient() (*clientContext, error) {
+	conn, err := grpc.NewClient("localhost"+c.Cfg.Server.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +36,7 @@ func newClient() (*ClientContext, error) {
 	client := proto.NewMitraServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
-	return &ClientContext{
+	return &clientContext{
 		Client: client,
 		Ctx:    ctx,
 		cancel: cancel,
