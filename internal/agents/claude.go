@@ -78,10 +78,18 @@ func EnableTrustForDir(dirPath string) error {
 // SetupFiles symlinks Claude-local files from the main worktree into a newly
 // created worktree. Silently skips any file that does not exist in the source.
 func SetupFiles(mainWorktreePath, worktreePath string) error {
-	if err := symlinkFile(mainWorktreePath, worktreePath, ".claude/settings.local.json"); err != nil {
-		return err
+	files := []string{
+		".claude/settings.local.json",
+		"CLAUDE.local.md",
 	}
-	return symlinkFile(mainWorktreePath, worktreePath, "CLAUDE.local.md")
+
+	for _, file := range files {
+		if err := symlinkFile(mainWorktreePath, worktreePath, file); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func symlinkFile(srcDir, dstDir, relPath string) error {
