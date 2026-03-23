@@ -1,4 +1,4 @@
-.PHONY: build run-server clean dev test protogen completion lint lint-fix help
+.PHONY: build run-server clean dev test protogen completion lint lint-fix help menubar
 
 BINARY_NAME=mitra
 BUILD_DIR=bin
@@ -13,7 +13,12 @@ help:
 	@echo "  lint-fix   - Run golangci-lint with auto-fix"
 	@echo "  protogen   - Generate Go code from proto files"
 	@echo "  shell      - Generate shell artifacts like aliases and completion (zsh only)"
+	@echo "  menubar    - Build the macOS menu bar app"
 	@echo "  clean      - Remove build artifacts"
+
+menubar:
+	@mkdir -p $(BUILD_DIR)
+	@swiftc platform/macOS/menubar.swift -o $(BUILD_DIR)/menubar
 
 build:
 	@mkdir -p $(BUILD_DIR)
