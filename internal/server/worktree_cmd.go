@@ -148,7 +148,7 @@ func (cmd *deleteWorktreeCmd) Execute(w *RepoWatcher) error {
 		Msg("checking if worktree is clean")
 
 	if !cmd.force {
-		isClean, reason, err := git.IsClean(worktreeToDelete.Path, repo.MainBranch)
+		isClean, reason, err := git.IsWorktreeClean(worktreeToDelete.Path, repo.MainBranch)
 		if err != nil {
 			err := fmt.Errorf("failed to check if worktree is clean: %w", err)
 			cmd.responseChan <- err

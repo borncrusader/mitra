@@ -76,7 +76,96 @@ func Clone(repoURL, targetDir, branch string) error {
 	return cmd.Run()
 }
 
-func IsClean(repoPath string, mainBranch string) (bool, DirtyReason, error) {
+func IsWorktreeClean(repoPath string, mainBranch string) (bool, DirtyReason, error) {
+	// Check for uncommitted and untracked changes
+	cmd := exec.Command("git", "-C", repoPath, "status", "--porcelain")
+	output, err := cmd.Output()
+	if err != nil {
+		return false, DirtyReasonClean, fmt.Errorf("failed to check git status: %w", err)
+	}
+	if len(strings.TrimSpace(string(output))) > 0 {
+		return false, DirtyReasonUncommittedChanges, nil
+	}
+
+	// Check for merge in progress
+	cmd = exec.Command("git", "-C", repoPath, "rev-parse", "--git-dir")
+	output, err = cmd.Output()
+	if err != nil {
+		return false, DirtyReasonClean, fmt.Errorf("failed to get git dir: %w", err)
+	}
+	gitDir := strings.TrimSpace(string(output))
+	if !strings.HasPrefix(gitDir, "/") {
+		gitDir = fmt.Sprintf("%s/%s", repoPath, gitDir)
+	}
+
+	if _, err := os.Stat(fmt.Sprintf("%s/MERGE_HEAD", gitDir)); err == nil {
+		return false, DirtyReasonMergeInProgress, nil
+	}
+	if _, err := os.Stat(fmt.Sprintf("%s/rebase-merge", gitDir)); err == nil {
+		return false, DirtyReasonRebaseInProgress, nil
+	}
+	if _, err := os.Stat(fmt.Sprintf("%s/rebase-apply", gitDir)); err == nil {
+		return false, DirtyReasonRebaseInProgress, nil
+	}
+	if _, err := os.Stat(fmt.Sprintf("%s/CHERRY_PICK_HEAD", gitDir)); err == nil {
+		return false, DirtyReasonCherryPickInProgress, nil
+	}
+	if _, err := os.Stat(fmt.Sprintf("%s/REVERT_HEAD", gitDir)); err == nil {
+		return false, DirtyReasonRevertInProgress, nil
+	}
+	if _, err := os.Stat(fmt.Sprintf("%s/BISECT_LOG", gitDir)); err == nil {
+		return false, DirtyReasonBisectInProgress, nil
+	}
+
+	// Get current branch name
+	cmd = exec.Command("git", "-C", repoPath, "branch", "--show-current")
+	output, err = cmd.Output()
+	if err != nil {
+		return false, DirtyReasonClean, fmt.Errorf("failed to get current branch: %w", err)
+	}
+	currentBranch := strings.TrimSpace(string(output))
+
+	if currentBranch == "" {
+		return false, DirtyReasonDetachedHead, nil
+	}
+
+	// Check for unpushed commits on current branch
+	cmd = exec.Command("git", "-C", repoPath, "rev-list", "--count", "@{u}..HEAD")
+	output, err = cmd.Output()
+	if err == nil {
+		unpushedCount := strings.TrimSpace(string(output))
+		if unpushedCount != "0" && unpushedCount != "" {
+			return false, DirtyReasonUnpushedCommits, nil
+		}
+	}
+
+	// If not on main branch, check if current branch has been merged
+	if currentBranch != mainBranch {
+		cmd = exec.Command("git", "-C", repoPath, "branch", "--merged", mainBranch)
+		output, err = cmd.Output()
+		if err != nil {
+			return false, DirtyReasonClean, fmt.Errorf("failed to check merge status: %w", err)
+		}
+
+		mergedBranches := strings.Split(strings.TrimSpace(string(output)), "\n")
+		isMerged := false
+		for _, branch := range mergedBranches {
+			branch = strings.TrimSpace(strings.TrimPrefix(branch, "*"))
+			if branch == currentBranch {
+				isMerged = true
+				break
+			}
+		}
+
+		if !isMerged {
+			return false, DirtyReasonCurrentBranchNotMerged, nil
+		}
+	}
+
+	return true, DirtyReasonClean, nil
+}
+
+func IsRepoClean(repoPath string, mainBranch string) (bool, DirtyReason, error) {
 	// Check for uncommitted and untracked changes
 	cmd := exec.Command("git", "-C", repoPath, "status", "--porcelain")
 	output, err := cmd.Output()

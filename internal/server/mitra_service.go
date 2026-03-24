@@ -199,7 +199,7 @@ func (s *MitraServiceServer) DeleteRepo(ctx context.Context, req *proto.DeleteRe
 
 	// Check that main worktree is clean
 	if mainWorktree != nil {
-		isClean, reason, err := git.IsClean(mainWorktree.Path, repo.MainBranch)
+		isClean, reason, err := git.IsRepoClean(mainWorktree.Path, repo.MainBranch)
 		if err != nil {
 			return &proto.DeleteRepoResponse{
 				Success: false,
@@ -269,7 +269,7 @@ func (s *MitraServiceServer) ListWorktrees(ctx context.Context, req *proto.ListW
 			continue
 		}
 
-		isClean, reason, err := git.IsClean(wt.Path, repo.MainBranch)
+		isClean, reason, err := git.IsWorktreeClean(wt.Path, repo.MainBranch)
 		if err != nil {
 			wt.Status = "error"
 		} else if isClean {
