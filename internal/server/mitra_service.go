@@ -300,7 +300,14 @@ func (s *MitraServiceServer) AddWorktree(ctx context.Context, req *proto.AddWork
 
 	worktreeID := util.RandomName()
 	branch := worktreeID
-	if req.Branch != nil && *req.Branch != "" {
+	if req.NextName != nil && *req.NextName {
+		existing := s.state.GetWorktrees(req.RepoId)
+		branches := make([]string, 0, len(existing))
+		for _, wt := range existing {
+			branches = append(branches, wt.Branch)
+		}
+		branch = util.NextGreekName(branches, s.cfg.Repo.BranchPrefix)
+	} else if req.Branch != nil && *req.Branch != "" {
 		branch = *req.Branch
 	}
 

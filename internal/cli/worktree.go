@@ -28,7 +28,7 @@ func (c *Command) worktreeCmd() *cobra.Command {
 }
 
 func (c *Command) worktreeAddCmd() *cobra.Command {
-	return &cobra.Command{
+	cobraCmd := &cobra.Command{
 		Use:     "add [repo-id] [branch[:parent-branch]]",
 		Aliases: []string{"a"},
 		Short:   "Add a new worktree",
@@ -39,6 +39,8 @@ func (c *Command) worktreeAddCmd() *cobra.Command {
 				log.Fatal().Err(err).Msg("failed to create client")
 			}
 			defer cc.Close()
+
+			nextName, _ := cmd.Flags().GetBool("next")
 
 			var repoID string
 			var branch string
@@ -80,7 +82,9 @@ func (c *Command) worktreeAddCmd() *cobra.Command {
 			req := &proto.AddWorktreeRequest{
 				RepoId: repoID,
 			}
-			if branch != "" {
+			if nextName {
+				req.NextName = &nextName
+			} else if branch != "" {
 				req.Branch = &branch
 			}
 			if parentBranch != nil {
@@ -98,6 +102,8 @@ func (c *Command) worktreeAddCmd() *cobra.Command {
 				Msg("created worktree")
 		},
 	}
+	cobraCmd.Flags().Bool("next", false, "Use next available Greek alphabet name")
+	return cobraCmd
 }
 
 func (c *Command) worktreeListCmd() *cobra.Command {

@@ -34,6 +34,25 @@ var nouns = []string{
 	"shadow", "echo", "whisper", "spark", "ember",
 }
 
+var greekNames = []string{
+	"alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
+	"iota", "kappa", "lambda", "mu", "nu", "xi", "omicron", "pi",
+	"rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",
+}
+
+func NextGreekName(existingBranches []string, prefix string) string {
+	used := make(map[string]bool)
+	for _, b := range existingBranches {
+		used[strings.TrimPrefix(b, prefix)] = true
+	}
+	for _, name := range greekNames {
+		if !used[name] {
+			return name
+		}
+	}
+	return RandomName()
+}
+
 func RandomName() string {
 	adj := adjectives[rand.Intn(len(adjectives))]
 	noun := nouns[rand.Intn(len(nouns))]

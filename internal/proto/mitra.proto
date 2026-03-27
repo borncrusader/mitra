@@ -68,6 +68,7 @@ message AddWorktreeRequest {
   string repo_id = 1;
   optional string branch = 2;
   optional string parent_branch = 3;
+  optional bool next_name = 4;
 }
 
 message AddWorktreeResponse {
