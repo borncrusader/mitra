@@ -25,7 +25,7 @@ build:
 	@go build -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/mitra
 
 run-server: build
-	@./$(BUILD_DIR)/$(BINARY_NAME) server
+	@./$(BUILD_DIR)/$(BINARY_NAME) serve
 
 dev:
 	@go run ./cmd/mitra
